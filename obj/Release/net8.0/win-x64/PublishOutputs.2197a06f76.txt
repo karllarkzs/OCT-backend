@@ -1,4 +1,0 @@
-/Users/joseph/Desktop/OCT/PharmaBack/bin/Release/net8.0/win-x64/publish/appsettings.Development.json
-/Users/joseph/Desktop/OCT/PharmaBack/bin/Release/net8.0/win-x64/publish/appsettings.json
-/Users/joseph/Desktop/OCT/PharmaBack/bin/Release/net8.0/win-x64/publish/PharmaBack.pdb
-/Users/joseph/Desktop/OCT/PharmaBack/bin/Release/net8.0/win-x64/publish/PharmaBack.exe
