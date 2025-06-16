@@ -39,8 +39,6 @@ internal static class ElevationHelper
     private static string GetArgs()
     {
         var host = Process.GetCurrentProcess().MainModule?.FileName;
-        return Path.GetFileName(host) == "dotnet"
-            ? $"\"{Assembly.GetExecutingAssembly().Location}\""
-            : "";
+        return Path.GetFileName(host) == "dotnet" ? $"\"{AppContext.BaseDirectory}\"" : "";
     }
 }

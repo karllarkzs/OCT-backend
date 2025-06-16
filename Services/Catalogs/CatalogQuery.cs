@@ -12,7 +12,7 @@ public sealed class CatalogQuery(PharmaDbContext db) : ICatalogQuery
             .InventoryBatches.Where(b => b.QuantityOnHand > 0)
             .Select(b => new CatalogRowDto(
                 b.BatchId,
-                "PRODUCT",
+                CatalogRowType.Product,
                 b.Product.Barcode,
                 b.Product.Name,
                 b.ExpiryDate,
@@ -25,7 +25,7 @@ public sealed class CatalogQuery(PharmaDbContext db) : ICatalogQuery
             .Bundles.Where(b => !b.IsDeleted)
             .Select(b => new CatalogRowDto(
                 b.BundleId,
-                "BUNDLE",
+                CatalogRowType.Bundle,
                 b.Code,
                 b.Name,
                 null,

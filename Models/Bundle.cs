@@ -21,5 +21,5 @@ public class Bundle
 
     public bool IsDeleted { get; set; } = false;
 
-    public ICollection<BundleItem> BundleItems { get; set; } = new List<BundleItem>();
+    public ICollection<BundleItem> BundleItems { get; set; } = [];
 }

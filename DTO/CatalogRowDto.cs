@@ -2,7 +2,7 @@ namespace PharmaBack.DTO;
 
 public sealed record CatalogRowDto(
     Guid Id,
-    string RowType,
+    CatalogRowType RowType,
     string Code,
     string Name,
     DateTime? Expiry,
@@ -10,3 +10,9 @@ public sealed record CatalogRowDto(
     string? Location,
     decimal? Price
 );
+
+public enum CatalogRowType
+{
+    Product,
+    Bundle,
+}

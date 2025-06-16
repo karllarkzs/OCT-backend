@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PharmaBack.Models;
 
 namespace PharmaBack.Data;
 
-public class PharmaDbContext(DbContextOptions<PharmaDbContext> options) : DbContext(options)
+public class PharmaDbContext(DbContextOptions<PharmaDbContext> options)
+    : IdentityDbContext<AppUser, IdentityRole, string>(options)
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ConsumableExtension> ConsumableExtensions => Set<ConsumableExtension>();
@@ -17,6 +20,8 @@ public class PharmaDbContext(DbContextOptions<PharmaDbContext> options) : DbCont
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Product>().HasIndex(p => p.Barcode).IsUnique();
 
         modelBuilder
@@ -36,5 +41,10 @@ public class PharmaDbContext(DbContextOptions<PharmaDbContext> options) : DbCont
             .HasOne(bi => bi.Product)
             .WithMany(p => p.BundleItems)
             .HasForeignKey(bi => bi.ProductId);
+        modelBuilder
+            .Entity<AppUser>()
+            .Property(u => u.Photo)
+            .HasColumnType("bytea")
+            .IsRequired(false);
     }
 }

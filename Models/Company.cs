@@ -17,5 +17,5 @@ public class Company
     [StringLength(50)]
     public string? Phone { get; set; }
 
-    public ICollection<Product> Products { get; set; } = new List<Product>();
+    public ICollection<Product> Products { get; set; } = [];
 }
