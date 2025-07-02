@@ -1,11 +1,14 @@
+using System.Linq.Expressions;
+
 namespace PharmaBack.Services.Crud;
 
 public interface ICrudService<TEntity, TKey>
     where TEntity : class
 {
-    Task<IReadOnlyList<TEntity>> GetAllAsync(CancellationToken ct);
-    Task<TEntity?> GetByIdAsync(TKey id, CancellationToken ct);
-    Task<TEntity> AddAsync(TEntity entity, CancellationToken ct);
-    Task<bool> UpdateAsync(TKey id, TEntity entity, CancellationToken ct);
-    Task<bool> DeleteAsync(TKey id, CancellationToken ct);
+    IQueryable<TEntity> Query(Expression<Func<TEntity, bool>>? predicate = null);
+    Task<IReadOnlyList<TEntity>> GetAllAsync(CancellationToken ct = default);
+    ValueTask<TEntity?> GetByIdAsync(TKey id, CancellationToken ct = default);
+    Task<TEntity> AddAsync(TEntity entity, CancellationToken ct = default);
+    Task<bool> UpdateAsync(TKey id, Action<TEntity> mutate, CancellationToken ct = default);
+    Task<bool> DeleteAsync(TKey id, CancellationToken ct = default);
 }

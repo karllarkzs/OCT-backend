@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using PharmaBack;
@@ -6,10 +7,12 @@ using PharmaBack.Data;
 using PharmaBack.Helpers;
 using PharmaBack.Models;
 using PharmaBack.Services.Auth;
-using PharmaBack.Services.Brands;
-using PharmaBack.Services.Catalog;
+using PharmaBack.Services.Bundles;
+using PharmaBack.Services.Catalogs;
 using PharmaBack.Services.Crud;
+using PharmaBack.Services.Locations;
 using PharmaBack.Services.Products;
+using PharmaBack.Services.Transactions;
 
 static async Task SeedRolesAndAdminAsync(IServiceProvider services)
 {
@@ -64,13 +67,21 @@ try
     {
         c.SwaggerDoc("v1", new OpenApiInfo { Title = "PharmaBack API", Version = "v1" });
     });
-    builder.Services.AddControllers();
-
+    builder
+        .Services.AddControllers()
+        .AddJsonOptions(opts =>
+        {
+            opts.JsonSerializerOptions.Converters.Add(
+                new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+            );
+        });
     builder.Services.AddPharmaDatabase(builder.Configuration);
     builder.Services.AddScoped<IProductService, ProductService>();
+    builder.Services.AddScoped<IBundleService, BundleService>();
     builder.Services.AddScoped<ICatalogQuery, CatalogQuery>();
     builder.Services.AddScoped(typeof(ICrudService<,>), typeof(CrudService<,>));
-    builder.Services.AddScoped<IBrandService, BrandService>();
+    builder.Services.AddScoped<ILocationService, LocationService>();
+    builder.Services.AddScoped<ITransactionService, TransactionService>();
 
     builder
         .Services.AddIdentity<AppUser, IdentityRole>(options =>

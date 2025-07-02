@@ -1,4 +1,4 @@
-namespace PharmaBack.Services.Catalog;
+namespace PharmaBack.Services.Catalogs;
 
 using PharmaBack.DTO;
 

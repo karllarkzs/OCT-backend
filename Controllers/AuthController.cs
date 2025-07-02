@@ -41,10 +41,20 @@ public class AuthController(
         if (!result.Succeeded)
             return Unauthorized("Invalid credentials");
 
-        return Ok();
+        var roles = await userManager.GetRolesAsync(user);
+
+        return Ok(
+            new
+            {
+                user.UserName,
+                user.FirstName,
+                user.LastName,
+                user.Email,
+                Roles = roles,
+            }
+        );
     }
 
-    [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> LogOut()
     {

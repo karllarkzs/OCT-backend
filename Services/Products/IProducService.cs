@@ -1,11 +1,16 @@
+using PharmaBack.DTO;
+using PharmaBack.DTO.Product;
+
 namespace PharmaBack.Services.Products;
 
 public interface IProductService
 {
-    Task<Guid> ProcessOneAsync(AddStockRequest dto, CancellationToken ct = default);
+    Task<Guid> AddOrUpdateAsync(AddStockRequestDto dto, CancellationToken ct = default);
 
     Task<IReadOnlyList<Guid>> BatchAddOrUpdateAsync(
-        IEnumerable<AddStockRequest> dtos,
+        IEnumerable<AddStockRequestDto> dtos,
         CancellationToken ct = default
     );
+    Task<IReadOnlyList<GetProductDto>> GetAsync(string? search, CancellationToken ct = default);
+    Task<IReadOnlyList<GetProductDto>> GetAllAsync(CancellationToken ct = default);
 }

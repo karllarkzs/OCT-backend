@@ -22,20 +22,30 @@ public class BundleController(IBundleService service) : ControllerBase
     public async Task<IActionResult> Create(BundleDto dto, CancellationToken ct)
     {
         var created = await service.CreateAsync(dto, ct);
-        return CreatedAtAction(nameof(GetById), new { id = created.BundleId }, created);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, BundleDto dto, CancellationToken ct) =>
-        await service.UpdateAsync(id, dto, ct) ? NoContent() : NotFound();
+    [HttpPost("{id:guid}")]
+    public async Task<IActionResult> AddItems(
+        Guid id,
+        [FromBody] List<BundleItemDto> items,
+        CancellationToken ct
+    )
+    {
+        if (items == null || items.Count == 0)
+            return BadRequest("Item list must not be empty.");
+
+        var success = await service.AddProductsAsync(id, items, ct);
+        return success ? Ok() : NotFound();
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> Update(BundleDto dto, CancellationToken ct) =>
+        await service.UpdateAsync(dto, ct) ? NoContent() : NotFound();
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct) =>
         await service.DeleteAsync(id, ct) ? NoContent() : NotFound();
-
-    [HttpPost("{id:guid}/items")]
-    public async Task<IActionResult> AddItem(Guid id, BundleItemDto dto, CancellationToken ct) =>
-        await service.AddProductAsync(id, dto, ct) ? Ok() : NotFound();
 
     [HttpDelete("{id:guid}/items/{productId:guid}")]
     public async Task<IActionResult> RemoveItem(Guid id, Guid productId, CancellationToken ct) =>

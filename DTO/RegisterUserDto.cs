@@ -7,5 +7,5 @@ public class RegisterUserDto
     public string FirstName { get; set; } = default!;
     public string LastName { get; set; } = default!;
     public byte[]? Photo { get; set; }
-    public string Role { get; set; } = "cashier"; // default role
+    public string Role { get; set; } = "cashier";
 }

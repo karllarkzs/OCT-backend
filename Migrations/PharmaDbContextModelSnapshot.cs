@@ -231,35 +231,22 @@ namespace PharmaBack.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("PharmaBack.Models.Brand", b =>
-                {
-                    b.Property<Guid>("BrandId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("BrandId");
-
-                    b.ToTable("Brands");
-                });
-
             modelBuilder.Entity("PharmaBack.Models.Bundle", b =>
                 {
-                    b.Property<Guid>("BundleId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Code")
+                    b.Property<string>("Barcode")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
+
+                    b.Property<Guid?>("LocationId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -269,77 +256,48 @@ namespace PharmaBack.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("BundleId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
 
                     b.ToTable("Bundles");
                 });
 
             modelBuilder.Entity("PharmaBack.Models.BundleItem", b =>
                 {
-                    b.Property<Guid>("BundleItemId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("BundleId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("InventoryBatchId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
-                    b.HasKey("BundleItemId");
+                    b.Property<int>("Uses")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
-                    b.HasIndex("BundleId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryBatchId");
 
                     b.HasIndex("ProductId");
 
+                    b.HasIndex("BundleId", "ProductId", "InventoryBatchId")
+                        .IsUnique();
+
                     b.ToTable("BundleItems");
-                });
-
-            modelBuilder.Entity("PharmaBack.Models.Category", b =>
-                {
-                    b.Property<Guid>("CategoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("CategoryId");
-
-                    b.ToTable("Categories");
-                });
-
-            modelBuilder.Entity("PharmaBack.Models.Company", b =>
-                {
-                    b.Property<Guid>("CompanyId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.HasKey("CompanyId");
-
-                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("PharmaBack.Models.ConsumableExtension", b =>
@@ -358,9 +316,9 @@ namespace PharmaBack.Migrations
                     b.ToTable("ConsumableExtensions");
                 });
 
-            modelBuilder.Entity("PharmaBack.Models.Formulation", b =>
+            modelBuilder.Entity("PharmaBack.Models.Discount", b =>
                 {
-                    b.Property<Guid>("FormulationId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -369,23 +327,25 @@ namespace PharmaBack.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.HasKey("FormulationId");
+                    b.Property<decimal?>("Percentage")
+                        .HasColumnType("numeric");
 
-                    b.ToTable("Formulations");
+                    b.HasKey("Id");
+
+                    b.ToTable("Discount");
                 });
 
             modelBuilder.Entity("PharmaBack.Models.InventoryBatch", b =>
                 {
-                    b.Property<Guid>("BatchId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly?>("ExpiryDate")
+                        .HasColumnType("date");
 
-                    b.Property<string>("LotNumber")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<Guid?>("LocationId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
@@ -393,20 +353,37 @@ namespace PharmaBack.Migrations
                     b.Property<int>("QuantityOnHand")
                         .HasColumnType("integer");
 
-                    b.Property<string>("StorageLocation")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.HasKey("Id");
 
-                    b.HasKey("BatchId");
+                    b.HasIndex("LocationId");
 
                     b.HasIndex("ProductId");
 
                     b.ToTable("InventoryBatches");
                 });
 
+            modelBuilder.Entity("PharmaBack.Models.Location", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Locations");
+                });
+
             modelBuilder.Entity("PharmaBack.Models.Product", b =>
                 {
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -415,17 +392,22 @@ namespace PharmaBack.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<Guid?>("BrandId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Brand")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Category")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<Guid?>("CompanyId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Company")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<Guid?>("FormulationId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Formulation")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Generic")
                         .HasMaxLength(200)
@@ -440,17 +422,8 @@ namespace PharmaBack.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Location")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<int>("LowStockThreshold")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
 
                     b.Property<decimal>("RetailPrice")
                         .HasColumnType("decimal(18,2)");
@@ -461,20 +434,90 @@ namespace PharmaBack.Migrations
                     b.Property<decimal>("WholesalePrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("ProductId");
+                    b.HasKey("Id");
 
                     b.HasIndex("Barcode")
                         .IsUnique();
 
-                    b.HasIndex("BrandId");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("FormulationId");
-
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("PharmaBack.Models.Transaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DiscountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsVoided")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("SpecialDiscount")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("Vat")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("VoidReason")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("VoidedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VoidedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DiscountId");
+
+                    b.ToTable("Transactions");
+                });
+
+            modelBuilder.Entity("PharmaBack.Models.TransactionItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CatalogId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CatalogName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ItemType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("TransactionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TransactionId");
+
+                    b.ToTable("TransactionItems");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -528,11 +571,26 @@ namespace PharmaBack.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PharmaBack.Models.Bundle", b =>
+                {
+                    b.HasOne("PharmaBack.Models.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId");
+
+                    b.Navigation("Location");
+                });
+
             modelBuilder.Entity("PharmaBack.Models.BundleItem", b =>
                 {
                     b.HasOne("PharmaBack.Models.Bundle", "Bundle")
                         .WithMany("BundleItems")
                         .HasForeignKey("BundleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PharmaBack.Models.InventoryBatch", "InventoryBatch")
+                        .WithMany()
+                        .HasForeignKey("InventoryBatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -543,6 +601,8 @@ namespace PharmaBack.Migrations
                         .IsRequired();
 
                     b.Navigation("Bundle");
+
+                    b.Navigation("InventoryBatch");
 
                     b.Navigation("Product");
                 });
@@ -560,45 +620,39 @@ namespace PharmaBack.Migrations
 
             modelBuilder.Entity("PharmaBack.Models.InventoryBatch", b =>
                 {
+                    b.HasOne("PharmaBack.Models.Location", "Location")
+                        .WithMany("InventoryBatches")
+                        .HasForeignKey("LocationId");
+
                     b.HasOne("PharmaBack.Models.Product", "Product")
                         .WithMany("Batches")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Location");
+
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("PharmaBack.Models.Product", b =>
+            modelBuilder.Entity("PharmaBack.Models.Transaction", b =>
                 {
-                    b.HasOne("PharmaBack.Models.Brand", "Brand")
-                        .WithMany("Products")
-                        .HasForeignKey("BrandId");
+                    b.HasOne("PharmaBack.Models.Discount", "Discount")
+                        .WithMany()
+                        .HasForeignKey("DiscountId");
 
-                    b.HasOne("PharmaBack.Models.Category", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryId");
-
-                    b.HasOne("PharmaBack.Models.Company", "Company")
-                        .WithMany("Products")
-                        .HasForeignKey("CompanyId");
-
-                    b.HasOne("PharmaBack.Models.Formulation", "Formulation")
-                        .WithMany("Products")
-                        .HasForeignKey("FormulationId");
-
-                    b.Navigation("Brand");
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Company");
-
-                    b.Navigation("Formulation");
+                    b.Navigation("Discount");
                 });
 
-            modelBuilder.Entity("PharmaBack.Models.Brand", b =>
+            modelBuilder.Entity("PharmaBack.Models.TransactionItem", b =>
                 {
-                    b.Navigation("Products");
+                    b.HasOne("PharmaBack.Models.Transaction", "Transaction")
+                        .WithMany("Items")
+                        .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Transaction");
                 });
 
             modelBuilder.Entity("PharmaBack.Models.Bundle", b =>
@@ -606,19 +660,9 @@ namespace PharmaBack.Migrations
                     b.Navigation("BundleItems");
                 });
 
-            modelBuilder.Entity("PharmaBack.Models.Category", b =>
+            modelBuilder.Entity("PharmaBack.Models.Location", b =>
                 {
-                    b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("PharmaBack.Models.Company", b =>
-                {
-                    b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("PharmaBack.Models.Formulation", b =>
-                {
-                    b.Navigation("Products");
+                    b.Navigation("InventoryBatches");
                 });
 
             modelBuilder.Entity("PharmaBack.Models.Product", b =>
@@ -628,6 +672,11 @@ namespace PharmaBack.Migrations
                     b.Navigation("BundleItems");
 
                     b.Navigation("Consumable");
+                });
+
+            modelBuilder.Entity("PharmaBack.Models.Transaction", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

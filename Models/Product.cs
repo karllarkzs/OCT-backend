@@ -6,15 +6,13 @@ namespace PharmaBack.Models;
 public class Product
 {
     [Key]
-    public Guid ProductId { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Required]
-    [StringLength(100)]
+    [Required, StringLength(100)]
     public string Barcode { get; set; } = string.Empty;
 
-    [Required]
-    [StringLength(200)]
-    public string Name { get; set; } = string.Empty;
+    [Required, StringLength(200)]
+    public string Brand { get; set; } = string.Empty;
 
     [StringLength(200)]
     public string? Generic { get; set; }
@@ -26,25 +24,20 @@ public class Product
     public decimal WholesalePrice { get; set; }
 
     public int Stock { get; set; }
+    public int LowStockThreshold { get; set; } = 10;
+    public bool IsConsumable { get; set; }
+    public bool HasExpiry { get; set; }
+    public bool IsDeleted { get; set; }
 
     [StringLength(100)]
-    public string? Location { get; set; }
+    public string? Category { get; set; }
 
-    public int LowStockThreshold { get; set; } = 10;
+    [StringLength(100)]
+    public string? Formulation { get; set; }
 
-    public bool IsConsumable { get; set; } = false;
-    public bool IsDeleted { get; set; } = false;
-    public bool HasExpiry { get; set; } = false;
+    [StringLength(100)]
+    public string? Company { get; set; }
 
-    public Guid? BrandId { get; set; }
-    public Guid? CategoryId { get; set; }
-    public Guid? FormulationId { get; set; }
-    public Guid? CompanyId { get; set; }
-
-    public Brand? Brand { get; set; }
-    public Category? Category { get; set; }
-    public Formulation? Formulation { get; set; }
-    public Company? Company { get; set; }
     public ConsumableExtension? Consumable { get; set; }
     public ICollection<InventoryBatch> Batches { get; set; } = [];
     public ICollection<BundleItem> BundleItems { get; set; } = [];
@@ -53,5 +46,8 @@ public class Product
     public bool IsLowStock => Stock <= LowStockThreshold;
 
     [NotMapped]
-    public bool IsExpired => Batches.Count != 0 && Batches.Min(b => b.ExpiryDate) < DateTime.Now;
+    public bool IsExpired =>
+        Batches.Any(b => b.ExpiryDate.HasValue)
+        && Batches.Where(b => b.ExpiryDate.HasValue).Min(b => b.ExpiryDate!.Value)
+            < DateOnly.FromDateTime(DateTime.Today);
 }
