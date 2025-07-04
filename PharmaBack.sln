@@ -1,8 +1,10 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PharmaBack", "PharmaBack.csproj", "{1392CFAE-D9A2-4A64-2637-A9A164A1D00C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PharmaBack.TrayApp", "PharmaBack.TrayApp\PharmaBack.TrayApp.csproj", "{169830E9-EAFD-4BCB-9FEA-0E75B76A02E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,6 +16,10 @@ Global
 		{1392CFAE-D9A2-4A64-2637-A9A164A1D00C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1392CFAE-D9A2-4A64-2637-A9A164A1D00C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1392CFAE-D9A2-4A64-2637-A9A164A1D00C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{169830E9-EAFD-4BCB-9FEA-0E75B76A02E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{169830E9-EAFD-4BCB-9FEA-0E75B76A02E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{169830E9-EAFD-4BCB-9FEA-0E75B76A02E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{169830E9-EAFD-4BCB-9FEA-0E75B76A02E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
