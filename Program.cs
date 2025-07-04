@@ -1,6 +1,9 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PharmaBack;
 using PharmaBack.Data;
@@ -43,13 +46,19 @@ try
     });
 
     builder.Configuration.AddConfiguration(configuration);
+
+    // ✅ CORS: Safe dynamic origin handling
     builder.Services.AddCors(options =>
     {
         options.AddPolicy(
             "OnlyFrontend",
             policy =>
             {
-                policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                policy
+                    .SetIsOriginAllowed(origin => Uri.TryCreate(origin, UriKind.Absolute, out _))
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials(); // required for cookie-based auth, optional for JWT
             }
         );
     });
@@ -66,7 +75,36 @@ try
     builder.Services.AddSwaggerGen(c =>
     {
         c.SwaggerDoc("v1", new OpenApiInfo { Title = "PharmaBack API", Version = "v1" });
+        c.AddSecurityDefinition(
+            "Bearer",
+            new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "JWT Authorization header using the Bearer scheme.",
+            }
+        );
+        c.AddSecurityRequirement(
+            new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer",
+                        },
+                    },
+                    Array.Empty<string>()
+                },
+            }
+        );
     });
+
     builder
         .Services.AddControllers()
         .AddJsonOptions(opts =>
@@ -75,6 +113,7 @@ try
                 new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
             );
         });
+
     builder.Services.AddPharmaDatabase(builder.Configuration);
     builder.Services.AddScoped<IProductService, ProductService>();
     builder.Services.AddScoped<IBundleService, BundleService>();
@@ -95,17 +134,32 @@ try
         .AddEntityFrameworkStores<PharmaDbContext>()
         .AddDefaultTokenProviders();
 
-    builder.Services.ConfigureApplicationCookie(options =>
-    {
-        options.Cookie.Name = "PharmaAuth";
-        options.LoginPath = "/api/auth/signin";
-        options.LogoutPath = "/api/auth/signout";
-        options.AccessDeniedPath = "/api/auth/forbidden";
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        options.ExpireTimeSpan = TimeSpan.FromHours(1);
-        options.SlidingExpiration = true;
-    });
+    // ✅ JWT Configuration
+    var jwtKey = configuration["Jwt:Key"];
+    var jwtIssuer = configuration["Jwt:Issuer"];
+    var jwtKeyBytes = Encoding.UTF8.GetBytes(jwtKey);
+
+    builder
+        .Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.RequireHttpsMetadata = false; // turn true in production
+            options.SaveToken = true;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtIssuer,
+                IssuerSigningKey = new SymmetricSecurityKey(jwtKeyBytes),
+            };
+        });
 
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder
@@ -115,6 +169,7 @@ try
     builder.Services.AddAuthorization();
 
     var app = builder.Build();
+
     app.UseCors("OnlyFrontend");
 
     if (app.Environment.IsDevelopment())
@@ -122,7 +177,8 @@ try
         app.UseSwagger();
         app.UseSwaggerUI();
     }
-    app.UseAuthentication();
+
+    app.UseAuthentication(); // JWT is in play here
     app.UseAuthorization();
 
     app.MapControllers();
@@ -132,6 +188,7 @@ try
     {
         StaticIpManager.RestoreDhcp();
     });
+
     await SeedRolesAndAdminAsync(app.Services);
     app.Run();
 }

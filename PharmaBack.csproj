@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <!-- Release-specific settings -->
+  
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -15,7 +15,7 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 
-    <PublishTrimmed>false</PublishTrimmed> <!-- true only if you're trimming deps carefully -->
+    <PublishTrimmed>false</PublishTrimmed> 
     <PublishReadyToRun>false</PublishReadyToRun>
 
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
@@ -23,23 +23,26 @@
     <StripSymbols>true</StripSymbols>
   </PropertyGroup>
 
-  <!-- Dependencies -->
+  
   <ItemGroup>
-    <!-- Swagger/OpenAPI -->
+    
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.11" />
 
-    <!-- EF Core for PostgreSQL -->
+    
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 
-    <!-- Identity Framework (EF + Core) -->
+    
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
 
-    <!-- EF Core Design-time tools (used for dotnet ef migrations) -->
+    
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6" PrivateAssets="all" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+
   </ItemGroup>
 
-  <!-- App settings config files -->
+  
   <ItemGroup>
     <Content Update="appsettings*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
