@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="PharmaBack.TrayApp.MainWindow"
+        Title="PharmaBack TrayApp"
+        Width="600"
+        Height="300">
+
+    <Grid ColumnDefinitions="1*,2*" RowDefinitions="*">
+        <!-- Left Panel: IP Display + Quit -->
+        <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+            <TextBlock Name="LocalIpDisplay" FontSize="16" HorizontalAlignment="Center" />
+            <Button 
+                Content="Quit" 
+                Width="100" 
+                HorizontalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Name="QuitButton" />
+        </StackPanel>
+
+        <!-- Right Panel: Terminal Output -->
+        <Border Grid.Column="1" Margin="10" BorderThickness="1" BorderBrush="Gray" CornerRadius="4">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBlock Name="LogOutput"
+                           FontFamily="Consolas"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Margin="5" />
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>
