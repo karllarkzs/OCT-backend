@@ -137,7 +137,6 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IBundleService, BundleService>();
         services.AddScoped<ICatalogQuery, CatalogQuery>();
         services.AddScoped(typeof(ICrudService<,>), typeof(CrudService<,>));
-
         services.AddScoped<ITransactionService, TransactionService>();
     }
 

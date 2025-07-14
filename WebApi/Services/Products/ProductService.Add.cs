@@ -1,4 +1,3 @@
-using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using PharmaBack.WebApi.DTO.Product;
 using PharmaBack.WebApi.Models;

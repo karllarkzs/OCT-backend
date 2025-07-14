@@ -8,5 +8,7 @@ public interface IProductService
         IEnumerable<CreateProductDto> dtos,
         CancellationToken ct = default
     );
+    Task<Guid> EditProductAsync(EditProductDto dto, CancellationToken ct = default);
     Task<IReadOnlyList<GetProductDto>> GetAllAsync(CancellationToken ct = default);
+    Task<Guid> RestockAsync(RestockProductDto dto, CancellationToken ct = default);
 }
