@@ -19,8 +19,7 @@ public class Bundle
     public decimal Price { get; set; }
 
     public bool IsDeleted { get; set; } = false;
-    public Guid? LocationId { get; set; }
-    public Location? Location { get; set; }
+    public string? Location { get; set; }
 
     public ICollection<BundleItem> BundleItems { get; set; } = [];
 }

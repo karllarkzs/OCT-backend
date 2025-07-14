@@ -1,14 +1,19 @@
-namespace PharmaBack.DTO.Transactions;
+using PharmaBack.WebApi.DTO;
+
+namespace PharmaBack.WebApi.DTO.Transactions;
 
 public sealed record TransactionSummaryDto(
     Guid Id,
+    string ReceiptId,
     DateTime CreatedAt,
     decimal Total,
-    int ItemCount
+    int ItemCount,
+    bool IsVoided
 );
 
 public sealed record TransactionDetailDto(
     Guid Id,
+    string ReceiptId,
     DateTime CreatedAt,
     decimal Subtotal,
     decimal Vat,

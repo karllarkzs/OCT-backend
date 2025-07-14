@@ -1,4 +1,4 @@
-namespace PharmaBack.DTO;
+namespace PharmaBack.WebApi.DTO;
 
 public sealed record BrandDto(Guid Id, string Name);
 

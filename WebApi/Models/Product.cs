@@ -23,10 +23,11 @@ public class Product
     [Column(TypeName = "decimal(18,2)")]
     public decimal WholesalePrice { get; set; }
 
-    public int Stock { get; set; }
-    public int LowStockThreshold { get; set; } = 10;
-    public bool IsConsumable { get; set; }
-    public bool HasExpiry { get; set; }
+    public int Quantity { get; set; }
+    public DateOnly? ExpiryDate { get; set; }
+    public DateOnly? ReceivedDate { get; set; }
+    public string? Location { get; set; }
+    public int MinStock { get; set; }
     public bool IsDeleted { get; set; }
 
     [StringLength(100)]
@@ -38,16 +39,15 @@ public class Product
     [StringLength(100)]
     public string? Company { get; set; }
 
-    public ConsumableExtension? Consumable { get; set; }
-    public ICollection<InventoryBatch> Batches { get; set; } = [];
+    [StringLength(100)]
+    public string? Type { get; set; }
+
     public ICollection<BundleItem> BundleItems { get; set; } = [];
 
     [NotMapped]
-    public bool IsLowStock => Stock <= LowStockThreshold;
+    public bool IsLowStock => Quantity <= MinStock;
 
     [NotMapped]
     public bool IsExpired =>
-        Batches.Any(b => b.ExpiryDate.HasValue)
-        && Batches.Where(b => b.ExpiryDate.HasValue).Min(b => b.ExpiryDate!.Value)
-            < DateOnly.FromDateTime(DateTime.Today);
+        ExpiryDate.HasValue && ExpiryDate.Value < DateOnly.FromDateTime(DateTime.Today);
 }

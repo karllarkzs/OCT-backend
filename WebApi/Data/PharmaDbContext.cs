@@ -10,11 +10,8 @@ public class PharmaDbContext(DbContextOptions<PharmaDbContext> options)
     : IdentityDbContext<AppUser, IdentityRole, string>(options)
 {
     public DbSet<Product> Products => Set<Product>();
-    public DbSet<ConsumableExtension> ConsumableExtensions => Set<ConsumableExtension>();
-    public DbSet<InventoryBatch> InventoryBatches => Set<InventoryBatch>();
     public DbSet<Bundle> Bundles => Set<Bundle>();
     public DbSet<BundleItem> BundleItems => Set<BundleItem>();
-    public DbSet<Location> Locations => Set<Location>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<TransactionItem> TransactionItems => Set<TransactionItem>();
 
@@ -23,16 +20,8 @@ public class PharmaDbContext(DbContextOptions<PharmaDbContext> options)
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Product>().HasIndex(p => p.Barcode).IsUnique();
-        modelBuilder.Entity<InventoryBatch>().Property(b => b.ExpiryDate).HasColumnType("date");
-        modelBuilder
-            .Entity<ConsumableExtension>()
-            .HasOne(r => r.Product)
-            .WithOne(p => p.Consumable)
-            .HasForeignKey<ConsumableExtension>(r => r.ProductId);
 
         modelBuilder.Entity<BundleItem>().Property(bi => bi.Quantity).HasDefaultValue(0);
-
-        modelBuilder.Entity<BundleItem>().Property(bi => bi.Uses).HasDefaultValue(0);
 
         modelBuilder
             .Entity<AppUser>()

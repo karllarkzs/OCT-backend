@@ -1,4 +1,4 @@
-using PharmaBack.DTO;
+using PharmaBack.WebApi.DTO;
 
 namespace PharmaBack.WebApi.Services.Bundles;
 

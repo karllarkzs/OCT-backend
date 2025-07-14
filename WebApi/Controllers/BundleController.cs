@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using PharmaBack.DTO;
+using PharmaBack.WebApi.DTO;
 using PharmaBack.WebApi.Services.Bundles;
 
 namespace PharmaBack.WebApi.Controllers;

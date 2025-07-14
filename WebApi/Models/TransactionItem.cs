@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using PharmaBack.DTO;
+using PharmaBack.WebApi.DTO;
 
 namespace PharmaBack.WebApi.Models;
 

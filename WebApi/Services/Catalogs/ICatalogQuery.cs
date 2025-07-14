@@ -1,6 +1,6 @@
 namespace PharmaBack.WebApi.Services.Catalogs;
 
-using PharmaBack.DTO;
+using PharmaBack.WebApi.DTO;
 
 public interface ICatalogQuery
 {

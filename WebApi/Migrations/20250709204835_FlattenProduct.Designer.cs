@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PharmaBack.WebApi.Data;
@@ -11,9 +12,11 @@ using PharmaBack.WebApi.Data;
 namespace PharmaBack.Migrations
 {
     [DbContext(typeof(PharmaDbContext))]
-    partial class PharmaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250709204835_FlattenProduct")]
+    partial class FlattenProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -341,6 +344,9 @@ namespace PharmaBack.Migrations
                     b.Property<string>("Generic")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("HasExpiry")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");

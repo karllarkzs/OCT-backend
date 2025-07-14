@@ -16,7 +16,6 @@ using PharmaBack.WebApi.Services.Auth;
 using PharmaBack.WebApi.Services.Bundles;
 using PharmaBack.WebApi.Services.Catalogs;
 using PharmaBack.WebApi.Services.Crud;
-using PharmaBack.WebApi.Services.Locations;
 using PharmaBack.WebApi.Services.Products;
 using PharmaBack.WebApi.Services.Transactions;
 
@@ -38,6 +37,7 @@ public class Startup(IConfiguration configuration)
                         .SetIsOriginAllowed(origin =>
                             Uri.TryCreate(origin, UriKind.Absolute, out _)
                         )
+                        .WithOrigins("http://localhost:5173")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
@@ -58,18 +58,20 @@ public class Startup(IConfiguration configuration)
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "PharmaBack API", Version = "v1" });
+
             c.AddSecurityDefinition(
                 "Bearer",
                 new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "bearer",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "JWT Authorization header using the Bearer scheme.",
+                    Description = "Enter your JWT like this: Bearer {your token}",
                 }
             );
+
             c.AddSecurityRequirement(
                 new OpenApiSecurityRequirement
                 {
@@ -102,8 +104,8 @@ public class Startup(IConfiguration configuration)
             .AddEntityFrameworkStores<PharmaDbContext>()
             .AddDefaultTokenProviders();
 
-        var jwtKey = Encoding.UTF8.GetBytes(Configuration["Jwt:Key"] ?? "");
-        var jwtIssuer = Configuration["Jwt:Issuer"];
+        // JWT AUTH SETUP
+        var key = Encoding.UTF8.GetBytes(Configuration["Jwt:Secret"]!);
 
         services
             .AddAuthentication(options =>
@@ -113,17 +115,15 @@ public class Startup(IConfiguration configuration)
             })
             .AddJwtBearer(options =>
             {
-                options.RequireHttpsMetadata = false;
-                options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidateAudience = true,
+                    ValidateAudience = false,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtIssuer,
-                    ValidAudience = jwtIssuer,
-                    IssuerSigningKey = new SymmetricSecurityKey(jwtKey),
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ClockSkew = TimeSpan.Zero,
                 };
             });
 
@@ -131,14 +131,13 @@ public class Startup(IConfiguration configuration)
             .AddAuthorizationBuilder()
             .AddPolicy("AdminOnly", policy => policy.RequireRole("admin"))
             .AddPolicy("CashierOnly", policy => policy.RequireRole("cashier"));
-        services.AddAuthorization();
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IBundleService, BundleService>();
         services.AddScoped<ICatalogQuery, CatalogQuery>();
         services.AddScoped(typeof(ICrudService<,>), typeof(CrudService<,>));
-        services.AddScoped<ILocationService, LocationService>();
+
         services.AddScoped<ITransactionService, TransactionService>();
     }
 
@@ -146,11 +145,11 @@ public class Startup(IConfiguration configuration)
     {
         app.UseCors("OnlyFrontend");
 
-        // if (env.IsDevelopment())
-        // {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-        // }
+        if (env.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
         app.UseRouting();
 
@@ -161,5 +160,8 @@ public class Startup(IConfiguration configuration)
         {
             endpoints.MapControllers();
         });
+        using var scope = app.ApplicationServices.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PharmaDbContext>();
+        Seeding.Seeder.SeedAsync(db, env).GetAwaiter().GetResult();
     }
 }

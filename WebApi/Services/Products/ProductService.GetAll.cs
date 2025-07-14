@@ -1,37 +1,38 @@
 namespace PharmaBack.WebApi.Services.Products;
 
 using Microsoft.EntityFrameworkCore;
-using PharmaBack.DTO.Product;
+using PharmaBack.WebApi.DTO.Product;
 
 public sealed partial class ProductService
 {
     public async Task<IReadOnlyList<GetProductDto>> GetAllAsync(CancellationToken ct = default)
     {
-        var q = db
-            .InventoryBatches.AsNoTracking()
-            .Where(b => b.QuantityOnHand > 0 && !b.Product.IsDeleted)
-            .OrderBy(b => b.Product.Brand)
-            .ThenBy(b => b.ExpiryDate ?? DateOnly.MaxValue)
-            .Select(b => new GetProductDto(
-                b.ProductId,
-                b.Id,
-                b.Product.Barcode,
-                b.Product.Generic,
-                b.Product.Brand,
-                b.Product.Category ?? null,
-                b.Product.Formulation ?? null,
-                b.Product.Company ?? null,
-                b.Product.RetailPrice,
-                b.Product.WholesalePrice,
-                b.QuantityOnHand,
-                b.ExpiryDate,
-                b.Location != null ? b.Location.Name : null,
-                b.LocationId,
-                b.Product.IsConsumable,
-                b.Product.Consumable != null ? (int?)b.Product.Consumable.UsesMax : null,
-                b.Product.Consumable != null ? (int?)b.Product.Consumable.UsesLeft : null
-            ));
+        var products = await db
+            .Products.AsNoTracking()
+            .Where(p => !p.IsDeleted && p.Quantity > 0)
+            .OrderBy(p => p.Brand)
+            .ThenBy(p => p.ExpiryDate ?? DateOnly.MaxValue)
+            .Select(p => new GetProductDto(
+                p.Id,
+                p.Barcode,
+                p.Generic,
+                p.Brand,
+                p.Category,
+                p.Formulation,
+                p.Company,
+                p.Type,
+                p.RetailPrice,
+                p.WholesalePrice,
+                p.Quantity,
+                p.MinStock,
+                p.ExpiryDate,
+                p.Location,
+                p.ReceivedDate,
+                p.IsExpired,
+                p.IsLowStock
+            ))
+            .ToListAsync(ct);
 
-        return await q.ToListAsync(ct);
+        return products;
     }
 }

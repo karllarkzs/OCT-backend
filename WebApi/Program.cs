@@ -15,6 +15,6 @@ public class Program
             .ConfigureWebHostDefaults(web =>
             {
                 web.UseStartup<Startup>();
-                web.UseUrls("http://localhost:5050"); // optional
+                web.UseUrls("http://0.0.0.0:5050");
             });
 }

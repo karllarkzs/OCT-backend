@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PharmaBack.DTO;
+using PharmaBack.WebApi.DTO;
 using PharmaBack.WebApi.Services.Catalogs;
 
 namespace PharmaBack.WebApi.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public sealed class CatalogController(ICatalogQuery catalogQuery) : ControllerBase

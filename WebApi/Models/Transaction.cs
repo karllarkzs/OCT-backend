@@ -6,6 +6,7 @@ public class Transaction
 {
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
+    public string? ReceiptId { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public decimal? CashInHand { get; set; }
@@ -26,5 +27,5 @@ public class Transaction
     public DateTime? VoidedAt { get; set; }
     public string? VoidReason { get; set; }
 
-    public List<TransactionItem> Items { get; set; } = new();
+    public List<TransactionItem> Items { get; set; } = [];
 }

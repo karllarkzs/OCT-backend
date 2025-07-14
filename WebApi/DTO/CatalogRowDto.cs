@@ -1,4 +1,4 @@
-namespace PharmaBack.DTO;
+namespace PharmaBack.WebApi.DTO;
 
 public sealed record CatalogRowDto(
     Guid Id,
@@ -8,9 +8,9 @@ public sealed record CatalogRowDto(
     string? Generic,
     string? Brand,
     string? Category,
+    string? Type,
     string? Formulation,
     string? Company,
-    DateOnly? Expiry,
     int Quantity,
     string? Location,
     decimal? Price

@@ -1,6 +1,6 @@
-using PharmaBack.DTO.Product;
+using PharmaBack.WebApi.DTO.Product;
 
-namespace PharmaBack.DTO.Location;
+namespace PharmaBack.WebApi.DTO.Location;
 
 public sealed record LocationWithProducsDto(
     Guid Id,

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using PharmaBack.DTO.Transactions;
+using PharmaBack.WebApi.DTO.Transactions;
 using PharmaBack.WebApi.Services.Transactions;
 
 namespace PharmaBack.WebApi.Controllers;

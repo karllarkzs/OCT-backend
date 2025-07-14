@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PharmaBack.WebApi.Data;
@@ -11,9 +12,11 @@ using PharmaBack.WebApi.Data;
 namespace PharmaBack.Migrations
 {
     [DbContext(typeof(PharmaDbContext))]
-    partial class PharmaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250708213400_transactionIdToTransacionModel")]
+    partial class transactionIdToTransacionModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,8 +248,8 @@ namespace PharmaBack.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Location")
-                        .HasColumnType("text");
+                    b.Property<Guid?>("LocationId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -257,6 +260,8 @@ namespace PharmaBack.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
 
                     b.ToTable("Bundles");
                 });
@@ -270,6 +275,9 @@ namespace PharmaBack.Migrations
                     b.Property<Guid>("BundleId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("InventoryBatchId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 
@@ -278,14 +286,37 @@ namespace PharmaBack.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
+                    b.Property<int>("Uses")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.HasKey("Id");
+
+                    b.HasIndex("InventoryBatchId");
 
                     b.HasIndex("ProductId");
 
-                    b.HasIndex("BundleId", "ProductId")
+                    b.HasIndex("BundleId", "ProductId", "InventoryBatchId")
                         .IsUnique();
 
                     b.ToTable("BundleItems");
+                });
+
+            modelBuilder.Entity("PharmaBack.WebApi.Models.ConsumableExtension", b =>
+                {
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("UsesLeft")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UsesMax")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ProductId");
+
+                    b.ToTable("ConsumableExtensions");
                 });
 
             modelBuilder.Entity("PharmaBack.WebApi.Models.Discount", b =>
@@ -305,6 +336,52 @@ namespace PharmaBack.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Discount");
+                });
+
+            modelBuilder.Entity("PharmaBack.WebApi.Models.InventoryBatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("ExpiryDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("LocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("QuantityOnHand")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("InventoryBatches");
+                });
+
+            modelBuilder.Entity("PharmaBack.WebApi.Models.Location", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("PharmaBack.WebApi.Models.Product", b =>
@@ -331,9 +408,6 @@ namespace PharmaBack.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateOnly?>("ExpiryDate")
-                        .HasColumnType("date");
-
                     b.Property<string>("Formulation")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -342,27 +416,23 @@ namespace PharmaBack.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<bool>("HasExpiry")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsConsumable")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Location")
-                        .HasColumnType("text");
-
-                    b.Property<int>("MinStock")
+                    b.Property<int>("LowStockThreshold")
                         .HasColumnType("integer");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<DateOnly?>("ReceivedDate")
-                        .HasColumnType("date");
 
                     b.Property<decimal>("RetailPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Type")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<int>("Stock")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("WholesalePrice")
                         .HasColumnType("decimal(18,2)");
@@ -399,9 +469,6 @@ namespace PharmaBack.Migrations
                     b.Property<string>("ModeOfPayment")
                         .HasColumnType("text");
 
-                    b.Property<string>("ReceiptId")
-                        .HasColumnType("text");
-
                     b.Property<string>("ReferenceNumber")
                         .HasColumnType("text");
 
@@ -413,6 +480,9 @@ namespace PharmaBack.Migrations
 
                     b.Property<decimal>("Total")
                         .HasColumnType("numeric");
+
+                    b.Property<string>("TransactionId")
+                        .HasColumnType("text");
 
                     b.Property<decimal>("Vat")
                         .HasColumnType("numeric");
@@ -519,11 +589,26 @@ namespace PharmaBack.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PharmaBack.WebApi.Models.Bundle", b =>
+                {
+                    b.HasOne("PharmaBack.WebApi.Models.Location", "Location")
+                        .WithMany()
+                        .HasForeignKey("LocationId");
+
+                    b.Navigation("Location");
+                });
+
             modelBuilder.Entity("PharmaBack.WebApi.Models.BundleItem", b =>
                 {
                     b.HasOne("PharmaBack.WebApi.Models.Bundle", "Bundle")
                         .WithMany("BundleItems")
                         .HasForeignKey("BundleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PharmaBack.WebApi.Models.InventoryBatch", "InventoryBatch")
+                        .WithMany()
+                        .HasForeignKey("InventoryBatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -534,6 +619,36 @@ namespace PharmaBack.Migrations
                         .IsRequired();
 
                     b.Navigation("Bundle");
+
+                    b.Navigation("InventoryBatch");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("PharmaBack.WebApi.Models.ConsumableExtension", b =>
+                {
+                    b.HasOne("PharmaBack.WebApi.Models.Product", "Product")
+                        .WithOne("Consumable")
+                        .HasForeignKey("PharmaBack.WebApi.Models.ConsumableExtension", "ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("PharmaBack.WebApi.Models.InventoryBatch", b =>
+                {
+                    b.HasOne("PharmaBack.WebApi.Models.Location", "Location")
+                        .WithMany("InventoryBatches")
+                        .HasForeignKey("LocationId");
+
+                    b.HasOne("PharmaBack.WebApi.Models.Product", "Product")
+                        .WithMany("Batches")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Location");
 
                     b.Navigation("Product");
                 });
@@ -563,9 +678,18 @@ namespace PharmaBack.Migrations
                     b.Navigation("BundleItems");
                 });
 
+            modelBuilder.Entity("PharmaBack.WebApi.Models.Location", b =>
+                {
+                    b.Navigation("InventoryBatches");
+                });
+
             modelBuilder.Entity("PharmaBack.WebApi.Models.Product", b =>
                 {
+                    b.Navigation("Batches");
+
                     b.Navigation("BundleItems");
+
+                    b.Navigation("Consumable");
                 });
 
             modelBuilder.Entity("PharmaBack.WebApi.Models.Transaction", b =>

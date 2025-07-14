@@ -1,13 +1,17 @@
 using Microsoft.EntityFrameworkCore;
-using PharmaBack.DTO;
-using PharmaBack.DTO.Transactions;
 using PharmaBack.WebApi.Data;
+using PharmaBack.WebApi.DTO;
+using PharmaBack.WebApi.DTO.Transactions;
 using PharmaBack.WebApi.Models;
 
 namespace PharmaBack.WebApi.Services.Transactions;
 
 public sealed class TransactionService(PharmaDbContext db) : ITransactionService
 {
+    private static readonly TimeZoneInfo ManilaTimeZone = TimeZoneInfo.FindSystemTimeZoneById(
+        "Singapore"
+    );
+
     public async Task<Guid> ProcessAsync(TransactionCreateDto dto, CancellationToken ct)
     {
         if (dto.ModeOfPayment == "cash")
@@ -31,8 +35,15 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
 
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
 
+        var utcNow = DateTime.UtcNow;
+        var receiptId = TimeZoneInfo
+            .ConvertTimeFromUtc(utcNow, ManilaTimeZone)
+            .ToString("yyMMddHHmmssfff");
+
         var tx = new Transaction
         {
+            CreatedAt = utcNow,
+            ReceiptId = receiptId,
             Subtotal = dto.Subtotal,
             Vat = dto.Vat,
             SpecialDiscount = dto.SpecialDiscount,
@@ -80,23 +91,69 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
         if (tx is null)
             return null;
 
+        var products = await db
+            .Products.Where(p => tx.Items.Select(i => i.CatalogId).Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id, ct);
+
+        var bundles = await db
+            .Bundles.Where(b => tx.Items.Select(i => i.CatalogId).Contains(b.Id))
+            .ToDictionaryAsync(b => b.Id, ct);
+
+        var items = new List<TransactionItemDto>();
+
+        foreach (var item in tx.Items)
+        {
+            string catalogName;
+
+            if (
+                item.ItemType == CatalogRowType.Product
+                && products.TryGetValue(item.CatalogId, out var product)
+            )
+            {
+                var generic = string.IsNullOrWhiteSpace(product.Generic) ? "" : product.Generic;
+                var formulation = string.IsNullOrWhiteSpace(product.Formulation)
+                    ? ""
+                    : product.Formulation;
+                var inner =
+                    $"{generic}{(string.IsNullOrWhiteSpace(formulation) ? "" : $" - {formulation}")}".Trim();
+
+                catalogName = string.IsNullOrWhiteSpace(inner)
+                    ? product.Brand
+                    : $"{product.Brand} ({inner})";
+            }
+            else if (
+                item.ItemType == CatalogRowType.Bundle
+                && bundles.TryGetValue(item.CatalogId, out var bundle)
+            )
+            {
+                catalogName = bundle.Name;
+            }
+            else
+            {
+                catalogName = item.CatalogName;
+            }
+
+            items.Add(
+                new TransactionItemDto(
+                    item.ItemType,
+                    item.CatalogId,
+                    catalogName,
+                    item.Quantity,
+                    item.UnitPrice,
+                    item.TotalPrice
+                )
+            );
+        }
+
         return new TransactionDetailDto(
             tx.Id,
-            tx.CreatedAt,
+            tx.ReceiptId!,
+            TimeZoneInfo.ConvertTimeFromUtc(tx.CreatedAt, ManilaTimeZone),
             tx.Subtotal,
             tx.Vat,
             tx.SpecialDiscount,
             tx.Total,
-            [
-                .. tx.Items.Select(i => new TransactionItemDto(
-                    i.ItemType,
-                    i.CatalogId,
-                    i.CatalogName,
-                    i.Quantity,
-                    i.UnitPrice,
-                    i.TotalPrice
-                )),
-            ],
+            items,
             tx.IsVoided,
             tx.VoidedBy,
             tx.VoidedAt,
@@ -113,32 +170,53 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
 
         if (filter.TodayOnly)
         {
-            var today = DateTime.UtcNow.Date;
-            query = query.Where(t => t.CreatedAt >= today && t.CreatedAt < today.AddDays(1));
+            var manilaNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, ManilaTimeZone);
+            var manilaToday = manilaNow.Date;
+            var startUtc = TimeZoneInfo.ConvertTimeToUtc(manilaToday, ManilaTimeZone);
+            var endUtc = TimeZoneInfo.ConvertTimeToUtc(manilaToday.AddDays(1), ManilaTimeZone);
+
+            query = query.Where(t => t.CreatedAt >= startUtc && t.CreatedAt < endUtc);
         }
 
         if (filter.From is not null && filter.To is not null)
         {
             query = query.Where(t => t.CreatedAt >= filter.From && t.CreatedAt <= filter.To);
         }
-        else if (
-            (filter.From is not null && filter.To is null)
-            || (filter.From is null && filter.To is not null)
-        )
+        else if (filter.From is not null || filter.To is not null)
         {
             throw new InvalidOperationException("Both 'From' and 'To' must be provided together.");
         }
 
-        return await query
+        var results = await query
             .OrderByDescending(t => t.CreatedAt)
-            .Select(t => new TransactionSummaryDto(t.Id, t.CreatedAt, t.Total, t.Items.Count))
+            .Select(t => new
+            {
+                t.Id,
+                t.ReceiptId,
+                t.CreatedAt,
+                t.Total,
+                ItemCount = t.Items.Count,
+                t.IsVoided,
+            })
             .ToListAsync(ct);
+
+        return
+        [
+            .. results.Select(t => new TransactionSummaryDto(
+                t.Id,
+                t.ReceiptId!,
+                TimeZoneInfo.ConvertTimeFromUtc(t.CreatedAt, ManilaTimeZone),
+                t.Total,
+                t.ItemCount,
+                t.IsVoided
+            )),
+        ];
     }
 
     private async Task<CatalogRowType> InferItemTypeAsync(Guid id, CancellationToken ct)
     {
-        var isBatch = await db.InventoryBatches.AnyAsync(b => b.Id == id, ct);
-        if (isBatch)
+        var isProduct = await db.Products.AnyAsync(p => p.Id == id, ct);
+        if (isProduct)
             return CatalogRowType.Product;
 
         var isBundle = await db.Bundles.AnyAsync(b => b.Id == id, ct);
@@ -154,41 +232,25 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
         CancellationToken ct
     )
     {
-        var batch =
-            await db
-                .InventoryBatches.Include(b => b.Product)
-                .ThenInclude(p => p.Consumable)
-                .FirstOrDefaultAsync(b => b.Id == item.CatalogId, ct)
-            ?? throw new InvalidOperationException("Product batch not found.");
+        var product =
+            await db.Products.FirstOrDefaultAsync(p => p.Id == item.CatalogId, ct)
+            ?? throw new InvalidOperationException("Product not found.");
 
-        var product = batch.Product;
-        var qty = item.Quantity;
+        if (product.Quantity < item.Quantity)
+            throw new InvalidOperationException("Not enough quantity on hand.");
 
-        if (product.IsConsumable && product.Consumable?.UsesMax > 0)
-        {
-            if (product.Consumable.UsesLeft < qty)
-                throw new InvalidOperationException("Not enough uses left.");
-
-            product.Consumable.UsesLeft -= qty;
-        }
-        else
-        {
-            if (batch.QuantityOnHand < qty)
-                throw new InvalidOperationException("Not enough quantity on hand.");
-
-            batch.QuantityOnHand -= qty;
-        }
+        product.Quantity -= item.Quantity;
 
         tx.Items.Add(
             new TransactionItem
             {
                 Transaction = tx,
-                CatalogId = batch.Id,
+                CatalogId = product.Id,
                 ItemType = CatalogRowType.Product,
                 CatalogName = product.Brand,
-                Quantity = qty,
+                Quantity = item.Quantity,
                 UnitPrice = product.RetailPrice,
-                TotalPrice = qty * product.RetailPrice,
+                TotalPrice = item.Quantity * product.RetailPrice,
             }
         );
     }
@@ -202,38 +264,17 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
         var bundle =
             await db
                 .Bundles.Include(b => b.BundleItems)
-                .ThenInclude(i => i.InventoryBatch)
-                .Include(b => b.BundleItems)
                 .ThenInclude(i => i.Product)
-                .ThenInclude(p => p.Consumable)
                 .FirstOrDefaultAsync(b => b.Id == item.CatalogId, ct)
             ?? throw new InvalidOperationException("Bundle not found.");
 
-        var qty = item.Quantity;
-
         foreach (var bi in bundle.BundleItems)
         {
-            var totalQty = qty * (bi.Quantity == 0 ? bi.Uses : bi.Quantity);
+            var requiredQty = item.Quantity * bi.Quantity;
+            if (bi.Product.Quantity < requiredQty)
+                throw new InvalidOperationException($"Not enough stock for '{bi.Product.Brand}'");
 
-            if (bi.Product.IsConsumable && bi.Uses > 0)
-            {
-                var usesLeft = bi.Product.Consumable?.UsesLeft ?? 0;
-                if (usesLeft < totalQty)
-                    throw new InvalidOperationException(
-                        $"Not enough uses left for '{bi.Product.Brand}'"
-                    );
-
-                bi.Product.Consumable!.UsesLeft -= totalQty;
-            }
-            else
-            {
-                if (bi.InventoryBatch.QuantityOnHand < totalQty)
-                    throw new InvalidOperationException(
-                        $"Not enough stock for '{bi.Product.Brand}'"
-                    );
-
-                bi.InventoryBatch.QuantityOnHand -= totalQty;
-            }
+            bi.Product.Quantity -= requiredQty;
         }
 
         tx.Items.Add(
@@ -243,10 +284,72 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
                 CatalogId = bundle.Id,
                 ItemType = CatalogRowType.Bundle,
                 CatalogName = bundle.Name,
-                Quantity = qty,
+                Quantity = item.Quantity,
                 UnitPrice = bundle.Price,
-                TotalPrice = qty * bundle.Price,
+                TotalPrice = item.Quantity * bundle.Price,
             }
         );
+    }
+
+    public async Task VoidTransactionAsync(
+        TransactionVoidDto dto,
+        string? username,
+        CancellationToken ct = default
+    )
+    {
+        if (string.IsNullOrWhiteSpace(username))
+            throw new UnauthorizedAccessException("Could not determine user identity.");
+
+        var transaction =
+            await db
+                .Transactions.Include(t => t.Items)
+                .FirstOrDefaultAsync(t => t.Id == dto.TransactionId, ct)
+            ?? throw new InvalidOperationException("Transaction not found.");
+        if (transaction.IsVoided)
+            throw new InvalidOperationException("Transaction is already voided.");
+
+        transaction.IsVoided = true;
+        transaction.VoidedBy = username;
+        transaction.VoidedAt = DateTime.UtcNow;
+        transaction.VoidReason = dto.Reason;
+
+        foreach (var item in transaction.Items)
+        {
+            switch (item.ItemType)
+            {
+                case CatalogRowType.Product:
+                {
+                    var product = await db.Products.FirstOrDefaultAsync(
+                        p => p.Id == item.CatalogId,
+                        ct
+                    );
+                    if (product is not null)
+                        product.Quantity += item.Quantity;
+                    break;
+                }
+
+                case CatalogRowType.Bundle:
+                {
+                    var bundle = await db
+                        .Bundles.Include(b => b.BundleItems)
+                        .ThenInclude(bi => bi.Product)
+                        .FirstOrDefaultAsync(b => b.Id == item.CatalogId, ct);
+
+                    if (bundle is null)
+                        continue;
+
+                    foreach (var bundleItem in bundle.BundleItems)
+                    {
+                        var restockQty = bundleItem.Quantity * item.Quantity;
+                        if (bundleItem.Product is not null)
+                            bundleItem.Product.Quantity += restockQty;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        await db.SaveChangesAsync(ct);
     }
 }

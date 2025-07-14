@@ -1,4 +1,5 @@
-using PharmaBack.DTO.Transactions;
+using Microsoft.AspNetCore.Mvc;
+using PharmaBack.WebApi.DTO.Transactions;
 
 namespace PharmaBack.WebApi.Services.Transactions;
 
@@ -9,5 +10,10 @@ public interface ITransactionService
     Task<List<TransactionSummaryDto>> FilterAsync(
         TransactionFilterDto filter,
         CancellationToken ct
+    );
+    Task VoidTransactionAsync(
+        TransactionVoidDto dto,
+        string? username,
+        CancellationToken ct = default
     );
 }

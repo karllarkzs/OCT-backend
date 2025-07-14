@@ -1,4 +1,4 @@
-namespace PharmaBack.DTO;
+namespace PharmaBack.WebApi.DTO;
 
 public class RegisterUserDto
 {

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace PharmaBack.WebApi.Models;
 
-[Index(nameof(BundleId), nameof(ProductId), nameof(InventoryBatchId), IsUnique = true)]
+[Index(nameof(BundleId), nameof(ProductId), IsUnique = true)]
 public class BundleItem
 {
     [Key]
@@ -16,16 +16,9 @@ public class BundleItem
     [Required]
     public Guid ProductId { get; set; }
 
-    [Required]
-    public Guid InventoryBatchId { get; set; } // 👈 NEW FIELD
-
     [Range(0, int.MaxValue)]
     public int Quantity { get; set; } = 0;
 
-    [Range(0, int.MaxValue)]
-    public int Uses { get; set; } = 0;
-
     public Bundle Bundle { get; set; } = null!;
     public Product Product { get; set; } = null!;
-    public InventoryBatch InventoryBatch { get; set; } = null!; // 👈 NEW NAV PROP
 }

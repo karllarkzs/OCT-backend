@@ -1,21 +1,21 @@
-namespace PharmaBack.DTO.Product;
+namespace PharmaBack.WebApi.DTO.Product;
 
 public sealed record GetProductDto(
     Guid Id,
-    Guid BatchId,
-    string Barcode,
+    string? Barcode,
     string? Generic,
     string? Brand,
     string? Category,
     string? Formulation,
     string? Company,
+    string? Type,
     decimal RetailPrice,
     decimal WholesalePrice,
-    int QuantityOnHand,
+    int Quantity,
+    int MinStock,
     DateOnly? ExpiryDate,
-    string? LocationName,
-    Guid? LocationId,
-    bool IsConsumable,
-    int? UsesMax,
-    int? UsesLeft
+    string? Location,
+    DateOnly? ReceivedDate,
+    bool IsExpired,
+    bool IsLowStock
 );
