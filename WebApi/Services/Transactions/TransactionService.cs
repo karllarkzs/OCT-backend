@@ -3,10 +3,12 @@ using PharmaBack.WebApi.Data;
 using PharmaBack.WebApi.DTO;
 using PharmaBack.WebApi.DTO.Transactions;
 using PharmaBack.WebApi.Models;
+using PharmaBack.WebApi.Services.Products;
 
 namespace PharmaBack.WebApi.Services.Transactions;
 
-public sealed class TransactionService(PharmaDbContext db) : ITransactionService
+public sealed class TransactionService(PharmaDbContext db, IProductAuditService audit)
+    : ITransactionService
 {
     private static readonly TimeZoneInfo ManilaTimeZone = TimeZoneInfo.FindSystemTimeZoneById(
         "Singapore"
@@ -67,8 +69,8 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
                     await ProcessProduct(tx, item, ct);
                     break;
 
-                case CatalogRowType.Bundle:
-                    await ProcessBundle(tx, item, ct);
+                case CatalogRowType.Package:
+                    await ProcessPackage(tx, item, ct);
                     break;
 
                 default:
@@ -95,8 +97,8 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
             .Products.Where(p => tx.Items.Select(i => i.CatalogId).Contains(p.Id))
             .ToDictionaryAsync(p => p.Id, ct);
 
-        var bundles = await db
-            .Bundles.Where(b => tx.Items.Select(i => i.CatalogId).Contains(b.Id))
+        var Packages = await db
+            .Packages.Where(b => tx.Items.Select(i => i.CatalogId).Contains(b.Id))
             .ToDictionaryAsync(b => b.Id, ct);
 
         var items = new List<TransactionItemDto>();
@@ -122,11 +124,11 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
                     : $"{product.Brand} ({inner})";
             }
             else if (
-                item.ItemType == CatalogRowType.Bundle
-                && bundles.TryGetValue(item.CatalogId, out var bundle)
+                item.ItemType == CatalogRowType.Package
+                && Packages.TryGetValue(item.CatalogId, out var Package)
             )
             {
-                catalogName = bundle.Name;
+                catalogName = Package.Name;
             }
             else
             {
@@ -219,9 +221,9 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
         if (isProduct)
             return CatalogRowType.Product;
 
-        var isBundle = await db.Bundles.AnyAsync(b => b.Id == id, ct);
-        if (isBundle)
-            return CatalogRowType.Bundle;
+        var isPackage = await db.Packages.AnyAsync(b => b.Id == id, ct);
+        if (isPackage)
+            return CatalogRowType.Package;
 
         throw new InvalidOperationException($"Unknown catalog ID: {id}");
     }
@@ -255,20 +257,20 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
         );
     }
 
-    private async Task ProcessBundle(
+    private async Task ProcessPackage(
         Transaction tx,
         TransactionItemCreateDto item,
         CancellationToken ct
     )
     {
-        var bundle =
+        var Package =
             await db
-                .Bundles.Include(b => b.BundleItems)
+                .Packages.Include(b => b.PackageItems)
                 .ThenInclude(i => i.Product)
                 .FirstOrDefaultAsync(b => b.Id == item.CatalogId, ct)
-            ?? throw new InvalidOperationException("Bundle not found.");
+            ?? throw new InvalidOperationException("Package not found.");
 
-        foreach (var bi in bundle.BundleItems)
+        foreach (var bi in Package.PackageItems)
         {
             var requiredQty = item.Quantity * bi.Quantity;
             if (bi.Product.Quantity < requiredQty)
@@ -281,12 +283,12 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
             new TransactionItem
             {
                 Transaction = tx,
-                CatalogId = bundle.Id,
-                ItemType = CatalogRowType.Bundle,
-                CatalogName = bundle.Name,
+                CatalogId = Package.Id,
+                ItemType = CatalogRowType.Package,
+                CatalogName = Package.Name,
                 Quantity = item.Quantity,
-                UnitPrice = bundle.Price,
-                TotalPrice = item.Quantity * bundle.Price,
+                UnitPrice = Package.Price,
+                TotalPrice = item.Quantity * Package.Price,
             }
         );
     }
@@ -328,21 +330,21 @@ public sealed class TransactionService(PharmaDbContext db) : ITransactionService
                     break;
                 }
 
-                case CatalogRowType.Bundle:
+                case CatalogRowType.Package:
                 {
-                    var bundle = await db
-                        .Bundles.Include(b => b.BundleItems)
+                    var Package = await db
+                        .Packages.Include(b => b.PackageItems)
                         .ThenInclude(bi => bi.Product)
                         .FirstOrDefaultAsync(b => b.Id == item.CatalogId, ct);
 
-                    if (bundle is null)
+                    if (Package is null)
                         continue;
 
-                    foreach (var bundleItem in bundle.BundleItems)
+                    foreach (var PackageItem in Package.PackageItems)
                     {
-                        var restockQty = bundleItem.Quantity * item.Quantity;
-                        if (bundleItem.Product is not null)
-                            bundleItem.Product.Quantity += restockQty;
+                        var restockQty = PackageItem.Quantity * item.Quantity;
+                        if (PackageItem.Product is not null)
+                            PackageItem.Product.Quantity += restockQty;
                     }
 
                     break;

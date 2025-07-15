@@ -2,8 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
-using PharmaBack;
 
 namespace PharmaBack.TrayApp;
 

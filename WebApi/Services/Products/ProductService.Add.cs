@@ -8,6 +8,8 @@ public sealed partial class ProductService
 {
     public async Task<IReadOnlyList<Guid>> BatchCreateOrUpdateAsync(
         IEnumerable<CreateProductDto> dtos,
+        string userId,
+        string userName,
         CancellationToken ct = default
     )
     {
@@ -29,7 +31,8 @@ public sealed partial class ProductService
                     && p.Category == dto.Category
                     && p.Formulation == dto.Formulation
                     && p.Company == dto.Company
-                    && p.Type == dto.Type,
+                    && p.Type == dto.Type
+                    && p.IsDiscountable == dto.IsDiscountable,
                 ct
             );
 
@@ -37,6 +40,15 @@ public sealed partial class ProductService
             {
                 product.Quantity += dto.Quantity;
                 db.Entry(product).Property(p => p.Quantity).IsModified = true;
+
+                await audit.LogChangeAsync(
+                    product,
+                    ProductActionType.Restocked,
+                    ["Quantity"],
+                    userId,
+                    userName,
+                    ct
+                );
             }
             else
             {
@@ -57,9 +69,19 @@ public sealed partial class ProductService
                     Formulation = dto.Formulation,
                     Company = dto.Company,
                     Type = dto.Type,
+                    IsDiscountable = dto.IsDiscountable,
                 };
 
                 db.Products.Add(product);
+
+                await audit.LogChangeAsync(
+                    product,
+                    ProductActionType.Added,
+                    ["All"],
+                    userId,
+                    userName,
+                    ct
+                );
             }
 
             results.Add(product.Id);

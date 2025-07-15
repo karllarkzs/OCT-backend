@@ -14,5 +14,6 @@ public sealed record CreateProductDto(
     string? Category,
     string? Formulation,
     string? Company,
-    string? Type
+    string? Type,
+    bool IsDiscountable
 );

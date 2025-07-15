@@ -10,10 +10,12 @@ public class PharmaDbContext(DbContextOptions<PharmaDbContext> options)
     : IdentityDbContext<AppUser, IdentityRole, string>(options)
 {
     public DbSet<Product> Products => Set<Product>();
-    public DbSet<Bundle> Bundles => Set<Bundle>();
-    public DbSet<BundleItem> BundleItems => Set<BundleItem>();
+    public DbSet<Package> Packages => Set<Package>();
+    public DbSet<PackageItem> PackageItems => Set<PackageItem>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<TransactionItem> TransactionItems => Set<TransactionItem>();
+    public DbSet<ProductHistory> ProductHistories => Set<ProductHistory>();
+    public DbSet<ProductHistoryChange> ProductHistoryChanges => Set<ProductHistoryChange>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -21,13 +23,25 @@ public class PharmaDbContext(DbContextOptions<PharmaDbContext> options)
 
         modelBuilder.Entity<Product>().HasIndex(p => p.Barcode).IsUnique();
 
-        modelBuilder.Entity<BundleItem>().Property(bi => bi.Quantity).HasDefaultValue(0);
-
+        modelBuilder.Entity<PackageItem>().Property(bi => bi.Quantity).HasDefaultValue(0);
+        modelBuilder
+            .Entity<ProductHistory>()
+            .HasMany(h => h.Changes)
+            .WithOne(c => c.ProductHistory)
+            .HasForeignKey(c => c.ProductHistoryId)
+            .OnDelete(DeleteBehavior.Cascade);
         modelBuilder
             .Entity<AppUser>()
             .Property(u => u.Photo)
             .HasColumnType("bytea")
             .IsRequired(false);
+
+        modelBuilder
+            .Entity<Product>()
+            .HasMany(p => p.History)
+            .WithOne()
+            .HasForeignKey(h => h.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {

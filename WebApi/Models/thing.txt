@@ -1,0 +1,15 @@
+Barcode
+Brand
+Generic 
+Category 
+Formulation 
+Company 
+Type
+RetailPrice 
+WholesalePrice 
+Quantity 
+ExpiryDate (pwede empty)
+ReceivedDate (pwede empty)
+Location 
+MinStock 
+Discountable (pwede ma discountan)

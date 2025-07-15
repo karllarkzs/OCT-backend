@@ -27,7 +27,7 @@ public partial class MainWindow : Window
     private void ShowLocalIp()
     {
         string ip = GetLocalIPAddress();
-        LocalIpDisplay.Text = $"Local IP: {ip}";
+        LocalIpDisplay.Text = $"{ip}";
         Log($"Detected local IP: {ip}");
     }
 

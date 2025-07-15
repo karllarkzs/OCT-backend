@@ -29,6 +29,7 @@ public class Product
     public string? Location { get; set; }
     public int MinStock { get; set; }
     public bool IsDeleted { get; set; }
+    public bool IsDiscountable { get; set; } = true;
 
     [StringLength(100)]
     public string? Category { get; set; }
@@ -42,7 +43,8 @@ public class Product
     [StringLength(100)]
     public string? Type { get; set; }
 
-    public ICollection<BundleItem> BundleItems { get; set; } = [];
+    public ICollection<PackageItem> PackageItems { get; set; } = [];
+    public ICollection<ProductHistory> History { get; set; } = [];
 
     [NotMapped]
     public bool IsLowStock => Quantity <= MinStock;

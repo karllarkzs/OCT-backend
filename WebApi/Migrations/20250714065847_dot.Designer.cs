@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PharmaBack.WebApi.Data;
@@ -11,9 +12,11 @@ using PharmaBack.WebApi.Data;
 namespace PharmaBack.Migrations
 {
     [DbContext(typeof(PharmaDbContext))]
-    partial class PharmaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250714065847_dot")]
+    partial class dot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -231,26 +234,7 @@ namespace PharmaBack.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("PharmaBack.WebApi.Models.Discount", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<decimal?>("Percentage")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Discount");
-                });
-
-            modelBuilder.Entity("PharmaBack.WebApi.Models.Package", b =>
+            modelBuilder.Entity("PharmaBack.WebApi.Models.Bundle", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -277,16 +261,16 @@ namespace PharmaBack.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Packages");
+                    b.ToTable("Bundles");
                 });
 
-            modelBuilder.Entity("PharmaBack.WebApi.Models.PackageItem", b =>
+            modelBuilder.Entity("PharmaBack.WebApi.Models.BundleItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("PackageId")
+                    b.Property<Guid>("BundleId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ProductId")
@@ -301,10 +285,29 @@ namespace PharmaBack.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.HasIndex("PackageId", "ProductId")
+                    b.HasIndex("BundleId", "ProductId")
                         .IsUnique();
 
-                    b.ToTable("PackageItems");
+                    b.ToTable("BundleItems");
+                });
+
+            modelBuilder.Entity("PharmaBack.WebApi.Models.Discount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal?>("Percentage")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Discount");
                 });
 
             modelBuilder.Entity("PharmaBack.WebApi.Models.Product", b =>
@@ -622,21 +625,21 @@ namespace PharmaBack.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PharmaBack.WebApi.Models.PackageItem", b =>
+            modelBuilder.Entity("PharmaBack.WebApi.Models.BundleItem", b =>
                 {
-                    b.HasOne("PharmaBack.WebApi.Models.Package", "Package")
-                        .WithMany("PackageItems")
-                        .HasForeignKey("PackageId")
+                    b.HasOne("PharmaBack.WebApi.Models.Bundle", "Bundle")
+                        .WithMany("BundleItems")
+                        .HasForeignKey("BundleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("PharmaBack.WebApi.Models.Product", "Product")
-                        .WithMany("PackageItems")
+                        .WithMany("BundleItems")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Package");
+                    b.Navigation("Bundle");
 
                     b.Navigation("Product");
                 });
@@ -681,16 +684,16 @@ namespace PharmaBack.Migrations
                     b.Navigation("Transaction");
                 });
 
-            modelBuilder.Entity("PharmaBack.WebApi.Models.Package", b =>
+            modelBuilder.Entity("PharmaBack.WebApi.Models.Bundle", b =>
                 {
-                    b.Navigation("PackageItems");
+                    b.Navigation("BundleItems");
                 });
 
             modelBuilder.Entity("PharmaBack.WebApi.Models.Product", b =>
                 {
-                    b.Navigation("History");
+                    b.Navigation("BundleItems");
 
-                    b.Navigation("PackageItems");
+                    b.Navigation("History");
                 });
 
             modelBuilder.Entity("PharmaBack.WebApi.Models.ProductHistory", b =>

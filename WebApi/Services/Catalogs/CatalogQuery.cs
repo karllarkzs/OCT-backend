@@ -39,17 +39,17 @@ public sealed class CatalogQuery(PharmaDbContext db) : ICatalogQuery
             ))
             .ToListAsync(ct);
 
-        var bundlesQ = db.Bundles.AsNoTracking().Where(b => !b.IsDeleted);
+        var PackagesQ = db.Packages.AsNoTracking().Where(b => !b.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
             var pattern = $"%{search}%";
-            bundlesQ = bundlesQ.Where(b =>
+            PackagesQ = PackagesQ.Where(b =>
                 EF.Functions.ILike(b.Barcode, pattern) || EF.Functions.ILike(b.Name, pattern)
             );
         }
 
-        var rawBundles = await bundlesQ
+        var rawPackages = await PackagesQ
             .Select(b => new
             {
                 b.Id,
@@ -57,11 +57,11 @@ public sealed class CatalogQuery(PharmaDbContext db) : ICatalogQuery
                 b.Name,
                 b.Price,
                 b.Location,
-                Items = b.BundleItems.Select(i => new { i.Product.Quantity }).ToList(),
+                Items = b.PackageItems.Select(i => new { i.Product.Quantity }).ToList(),
             })
             .ToListAsync(ct);
 
-        var bundleRows = rawBundles
+        var PackageRows = rawPackages
             .Select(b =>
             {
                 var buildable = b
@@ -75,7 +75,7 @@ public sealed class CatalogQuery(PharmaDbContext db) : ICatalogQuery
 
                 return new CatalogRowDto(
                     b.Id,
-                    CatalogRowType.Bundle,
+                    CatalogRowType.Package,
                     b.Barcode,
                     b.Name,
                     null,
@@ -92,7 +92,7 @@ public sealed class CatalogQuery(PharmaDbContext db) : ICatalogQuery
             .ToList();
 
         var allRows = productRows
-            .Concat(bundleRows)
+            .Concat(PackageRows)
             .OrderBy(r => r.Name ?? r.Brand ?? "", StringComparer.OrdinalIgnoreCase)
             .ToList();
 

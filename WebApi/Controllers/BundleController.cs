@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using PharmaBack.WebApi.DTO;
-using PharmaBack.WebApi.Services.Bundles;
+using PharmaBack.WebApi.Services.Packages;
 
 namespace PharmaBack.WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BundleController(IBundleService service) : ControllerBase
+public class PackageController(IPackageService service) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken ct) => Ok(await service.GetAllAsync(ct));
@@ -19,7 +19,7 @@ public class BundleController(IBundleService service) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(BundleDto dto, CancellationToken ct)
+    public async Task<IActionResult> Create(PackageDto dto, CancellationToken ct)
     {
         var created = await service.CreateAsync(dto, ct);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
@@ -28,7 +28,7 @@ public class BundleController(IBundleService service) : ControllerBase
     [HttpPost("{id:guid}")]
     public async Task<IActionResult> AddItems(
         Guid id,
-        [FromBody] List<BundleItemDto> items,
+        [FromBody] List<PackageItemDto> items,
         CancellationToken ct
     )
     {
@@ -40,7 +40,7 @@ public class BundleController(IBundleService service) : ControllerBase
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update(BundleDto dto, CancellationToken ct) =>
+    public async Task<IActionResult> Update(PackageDto dto, CancellationToken ct) =>
         await service.UpdateAsync(dto, ct) ? NoContent() : NotFound();
 
     [HttpDelete("{id:guid}")]

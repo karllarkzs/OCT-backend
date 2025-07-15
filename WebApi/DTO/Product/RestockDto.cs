@@ -15,5 +15,6 @@ public sealed record RestockProductDto(
     string? Category,
     string? Formulation,
     string? Company,
-    string? Type
+    string? Type,
+    bool IsDiscountable
 );

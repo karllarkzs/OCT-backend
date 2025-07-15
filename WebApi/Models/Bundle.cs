@@ -3,7 +3,7 @@ namespace PharmaBack.WebApi.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class Bundle
+public class Package
 {
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
@@ -21,5 +21,5 @@ public class Bundle
     public bool IsDeleted { get; set; } = false;
     public string? Location { get; set; }
 
-    public ICollection<BundleItem> BundleItems { get; set; } = [];
+    public ICollection<PackageItem> PackageItems { get; set; } = [];
 }

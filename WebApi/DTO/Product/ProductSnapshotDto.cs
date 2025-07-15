@@ -1,8 +1,11 @@
+using PharmaBack.WebApi.Models;
+
 namespace PharmaBack.WebApi.DTO.Product;
 
-public sealed record EditProductDto(
+public sealed record ProductSnapshotDto(
     Guid Id,
-    string? Barcode,
+    Guid ProductId,
+    string Barcode,
     string Brand,
     string? Generic,
     decimal RetailPrice,
@@ -12,9 +15,15 @@ public sealed record EditProductDto(
     DateOnly? ReceivedDate,
     string? Location,
     int MinStock,
+    bool IsDeleted,
+    bool IsDiscountable,
     string? Category,
     string? Formulation,
     string? Company,
     string? Type,
-    bool IsDiscountable
+    DateTime ChangedAt,
+    ProductActionType ActionType,
+    string ChangedByUserId,
+    string ChangedByUserName,
+    IReadOnlyList<string> Changes
 );

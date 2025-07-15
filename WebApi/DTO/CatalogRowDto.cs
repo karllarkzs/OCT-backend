@@ -19,5 +19,5 @@ public sealed record CatalogRowDto(
 public enum CatalogRowType
 {
     Product,
-    Bundle,
+    Package,
 }

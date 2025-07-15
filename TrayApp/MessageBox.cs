@@ -19,8 +19,18 @@ public static class MessageBox
             CanResize = false,
         };
 
-        var yesButton = new Button { Content = "Yes", Width = 80 };
-        var noButton = new Button { Content = "No", Width = 80 };
+        var yesButton = new Button
+        {
+            Content = "Yes",
+            Width = 80,
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+        };
+        var noButton = new Button
+        {
+            Content = "No",
+            Width = 80,
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+        };
 
         var tcs = new TaskCompletionSource<bool>();
 

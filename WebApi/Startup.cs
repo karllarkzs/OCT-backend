@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,7 +15,7 @@ using Microsoft.OpenApi.Models;
 using PharmaBack.WebApi.Data;
 using PharmaBack.WebApi.Models;
 using PharmaBack.WebApi.Services.Auth;
-using PharmaBack.WebApi.Services.Bundles;
+using PharmaBack.WebApi.Services.Packages;
 using PharmaBack.WebApi.Services.Catalogs;
 using PharmaBack.WebApi.Services.Crud;
 using PharmaBack.WebApi.Services.Products;
@@ -104,7 +106,6 @@ public class Startup(IConfiguration configuration)
             .AddEntityFrameworkStores<PharmaDbContext>()
             .AddDefaultTokenProviders();
 
-        // JWT AUTH SETUP
         var key = Encoding.UTF8.GetBytes(Configuration["Jwt:Secret"]!);
 
         services
@@ -134,10 +135,11 @@ public class Startup(IConfiguration configuration)
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
-        services.AddScoped<IBundleService, BundleService>();
+        services.AddScoped<IPackageService, PackageService>();
         services.AddScoped<ICatalogQuery, CatalogQuery>();
         services.AddScoped(typeof(ICrudService<,>), typeof(CrudService<,>));
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<IProductAuditService, ProductAuditService>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -159,8 +161,10 @@ public class Startup(IConfiguration configuration)
         {
             endpoints.MapControllers();
         });
+
         using var scope = app.ApplicationServices.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PharmaDbContext>();
-        Seeding.Seeder.SeedAsync(db, env).GetAwaiter().GetResult();
+        db.Database.Migrate();
+        // Seeding.Seeder.SeedAsync(db, env).GetAwaiter().GetResult();
     }
 }

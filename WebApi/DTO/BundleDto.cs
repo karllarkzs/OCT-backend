@@ -1,14 +1,14 @@
 namespace PharmaBack.WebApi.DTO;
 
-public record BundleDto(
+public record PackageDto(
     Guid Id,
     string Barcode,
     string Name,
     decimal Price,
     string? Location, // Now nullable string
-    List<BundleItemDto>? Items
+    List<PackageItemDto>? Items
 );
 
-public record BundleItemDto(Guid ProductId, int? Quantity, CatalogRowDto? ProductDetails);
+public record PackageItemDto(Guid ProductId, int? Quantity, CatalogRowDto? ProductDetails);
 
-public record AddBundleItemsRequest(Guid BundleId, List<BundleItemDto> Items);
+public record AddPackageItemsRequest(Guid PackageId, List<PackageItemDto> Items);

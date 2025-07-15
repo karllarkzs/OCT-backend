@@ -17,5 +17,7 @@ public sealed record GetProductDto(
     string? Location,
     DateOnly? ReceivedDate,
     bool IsExpired,
-    bool IsLowStock
+    bool IsLowStock,
+    bool IsDiscountable,
+    IReadOnlyList<ProductSnapshotDto> History
 );

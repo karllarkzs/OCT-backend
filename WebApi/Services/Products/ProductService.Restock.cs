@@ -41,6 +41,7 @@ public sealed partial class ProductService
             Formulation = dto.Formulation,
             Company = dto.Company,
             Type = dto.Type,
+            IsDiscountable = dto.IsDiscountable,
         };
 
         db.Products.Add(newProduct);

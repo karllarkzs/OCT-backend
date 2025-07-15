@@ -4,14 +4,34 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         x:Class="PharmaBack.TrayApp.MainWindow"
-        Title="PharmaBack TrayApp"
-        Width="600"
+        Title="OCT Server"
+        Width="600" MinWidth="600"
         Height="300">
 
     <Grid ColumnDefinitions="1*,2*" RowDefinitions="*">
         <!-- Left Panel: IP Display + Quit -->
         <StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
-            <TextBlock Name="LocalIpDisplay" FontSize="16" HorizontalAlignment="Center" />
+            
+            <!-- IP + Note group -->
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Name="LocalIpDisplay"
+                           FontSize="20"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,4"
+                           MaxWidth="250" />
+                
+                <TextBlock Text="Please input the text above in the app"
+                           FontSize="12"
+                           Foreground="Gray"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           MaxWidth="250" />
+            </StackPanel>
+
+            <!-- Quit Button -->
             <Button 
                 Content="Quit" 
                 Width="100" 
