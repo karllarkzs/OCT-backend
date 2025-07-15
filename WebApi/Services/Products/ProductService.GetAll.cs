@@ -10,7 +10,7 @@ public sealed partial class ProductService
         CancellationToken ct = default
     )
     {
-        var query = db.Products.AsNoTracking().Where(p => !p.IsDeleted && p.Quantity > 0);
+        var query = db.Products.AsNoTracking();
 
         if (includeHistory)
         {
@@ -43,6 +43,7 @@ public sealed partial class ProductService
                 IsExpired: p.IsExpired,
                 IsLowStock: p.IsLowStock,
                 IsDiscountable: p.IsDiscountable,
+                IsDeleted: p.IsDeleted,
                 History: includeHistory
                     ? p
                         .History.OrderByDescending(h => h.ChangedAt)

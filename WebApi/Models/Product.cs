@@ -30,6 +30,7 @@ public class Product
     public int MinStock { get; set; }
     public bool IsDeleted { get; set; }
     public bool IsDiscountable { get; set; } = true;
+    public bool IsReagent { get; set; }
 
     [StringLength(100)]
     public string? Category { get; set; }

@@ -17,7 +17,7 @@ using PharmaBack.WebApi.Models;
 using PharmaBack.WebApi.Services.Auth;
 using PharmaBack.WebApi.Services.Packages;
 using PharmaBack.WebApi.Services.Catalogs;
-using PharmaBack.WebApi.Services.Crud;
+
 using PharmaBack.WebApi.Services.Products;
 using PharmaBack.WebApi.Services.Transactions;
 
@@ -137,7 +137,6 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IPackageService, PackageService>();
         services.AddScoped<ICatalogQuery, CatalogQuery>();
-        services.AddScoped(typeof(ICrudService<,>), typeof(CrudService<,>));
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddScoped<IProductAuditService, ProductAuditService>();
     }

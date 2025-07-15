@@ -88,26 +88,25 @@ public sealed class ProductsController(IProductService productService) : Control
         var companies = await productService.GetAllCompaniesAsync(ct);
         return Ok(companies);
     }
-
     [HttpDelete]
-[Authorize]
-public async Task<IActionResult> SoftDeleteMany([FromBody] List<Guid> ids, CancellationToken ct)
-{
-    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-    var userName = User.Identity?.Name;
-
-    if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userName))
-        return Unauthorized();
-
-    try
+    [Authorize]
+    public async Task<IActionResult> SoftDeleteMany([FromBody] List<Guid> ids, CancellationToken ct)
     {
-        await productService.SoftDeleteAsync(ids, userId, userName, ct);
-        return Ok(new { deleted = ids });
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userName = User.Identity?.Name;
+
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userName))
+            return Unauthorized();
+
+        try
+        {
+            await productService.SoftDeleteAsync(ids, userId, userName, ct);
+            return Ok(new { deleted = ids });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
-    catch (Exception ex)
-    {
-        return BadRequest(new { error = ex.Message });
-    }
-}
 
 }
