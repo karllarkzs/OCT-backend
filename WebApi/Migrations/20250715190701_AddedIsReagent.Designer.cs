@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PharmaBack.WebApi.Data;
@@ -11,9 +12,11 @@ using PharmaBack.WebApi.Data;
 namespace PharmaBack.Migrations
 {
     [DbContext(typeof(PharmaDbContext))]
-    partial class PharmaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250715190701_AddedIsReagent")]
+    partial class AddedIsReagent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -484,74 +487,6 @@ namespace PharmaBack.Migrations
                     b.ToTable("ProductHistoryChanges");
                 });
 
-            modelBuilder.Entity("PharmaBack.WebApi.Models.ProductRestock", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedByUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CreatedByUserName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ReceivedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateOnly>("ReceivedDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("ReferenceNumber")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SupplierName")
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("TotalCost")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProductRestocks");
-                });
-
-            modelBuilder.Entity("PharmaBack.WebApi.Models.ProductRestockItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ProductRestockId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("PurchasePrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("RetailPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("ProductRestockId");
-
-                    b.ToTable("ProductRestockItems");
-                });
-
             modelBuilder.Entity("PharmaBack.WebApi.Models.Transaction", b =>
                 {
                     b.Property<Guid>("Id")
@@ -735,25 +670,6 @@ namespace PharmaBack.Migrations
                     b.Navigation("ProductHistory");
                 });
 
-            modelBuilder.Entity("PharmaBack.WebApi.Models.ProductRestockItem", b =>
-                {
-                    b.HasOne("PharmaBack.WebApi.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("PharmaBack.WebApi.Models.ProductRestock", "ProductRestock")
-                        .WithMany("Items")
-                        .HasForeignKey("ProductRestockId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("ProductRestock");
-                });
-
             modelBuilder.Entity("PharmaBack.WebApi.Models.Transaction", b =>
                 {
                     b.HasOne("PharmaBack.WebApi.Models.Discount", "Discount")
@@ -789,11 +705,6 @@ namespace PharmaBack.Migrations
             modelBuilder.Entity("PharmaBack.WebApi.Models.ProductHistory", b =>
                 {
                     b.Navigation("Changes");
-                });
-
-            modelBuilder.Entity("PharmaBack.WebApi.Models.ProductRestock", b =>
-                {
-                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("PharmaBack.WebApi.Models.Transaction", b =>

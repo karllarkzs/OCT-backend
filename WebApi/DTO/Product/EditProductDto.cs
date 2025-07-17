@@ -16,5 +16,6 @@ public sealed record EditProductDto(
     string? Formulation,
     string? Company,
     string? Type,
-    bool IsDiscountable
+    bool IsDiscountable,
+    bool IsReagent
 );

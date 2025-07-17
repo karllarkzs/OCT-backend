@@ -16,6 +16,7 @@ public sealed record ProductSnapshotDto(
     string? Location,
     int MinStock,
     bool IsDeleted,
+    bool IsReagent,
     bool IsDiscountable,
     string? Category,
     string? Formulation,

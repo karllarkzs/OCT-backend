@@ -16,6 +16,8 @@ public class PharmaDbContext(DbContextOptions<PharmaDbContext> options)
     public DbSet<TransactionItem> TransactionItems => Set<TransactionItem>();
     public DbSet<ProductHistory> ProductHistories => Set<ProductHistory>();
     public DbSet<ProductHistoryChange> ProductHistoryChanges => Set<ProductHistoryChange>();
+    public DbSet<ProductRestock> ProductRestocks => Set<ProductRestock>();
+    public DbSet<ProductRestockItem> ProductRestockItems => Set<ProductRestockItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,6 +44,18 @@ public class PharmaDbContext(DbContextOptions<PharmaDbContext> options)
             .WithOne()
             .HasForeignKey(h => h.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ProductRestock>()
+        .HasMany(r => r.Items)
+        .WithOne(i => i.ProductRestock)
+        .HasForeignKey(i => i.ProductRestockId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ProductRestockItem>()
+            .HasOne(i => i.Product)
+            .WithMany()
+            .HasForeignKey(i => i.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {

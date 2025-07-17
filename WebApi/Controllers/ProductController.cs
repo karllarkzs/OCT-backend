@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PharmaBack.WebApi.DTO.Product;
+using PharmaBack.WebApi.DTO.Restock;
 using PharmaBack.WebApi.Services.Products;
 
 namespace PharmaBack.WebApi.Controllers;
@@ -59,21 +61,27 @@ public sealed class ProductsController(IProductService productService) : Control
             return BadRequest(new { error = ex.Message });
         }
     }
-
     [HttpPost("restock")]
     [Authorize]
-    public async Task<IActionResult> Restock([FromBody] RestockProductDto dto, CancellationToken ct)
+    public async Task<IActionResult> Restock([FromBody] CreateRestockDto dto, CancellationToken ct)
     {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userName = User.Identity?.Name;
+
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userName))
+            return Unauthorized();
+
         try
         {
-            await productService.RestockAsync(dto, ct);
-            return Ok(new { });
+            var result = await productService.RestockAsync(dto, userId, userName, ct);
+            return Ok(new { restockId = result });
         }
         catch (Exception ex)
         {
             return BadRequest(new { error = ex.Message });
         }
     }
+
 
     [HttpGet("locations")]
     public async Task<ActionResult<IReadOnlyList<string>>> GetLocations(CancellationToken ct)

@@ -28,7 +28,6 @@ public sealed partial class ProductService
                 if (!EqualityComparer<T>.Default.Equals(oldVal, newVal))
                 {
                     changedFields.Add(name);
-                    // assign after tracking:
                     typeof(Product).GetProperty(name)!.SetValue(product, newVal);
                 }
             }
@@ -48,6 +47,7 @@ public sealed partial class ProductService
             Track(product.Company, dto.Company, nameof(product.Company));
             Track(product.Type, dto.Type, nameof(product.Type));
             Track(product.IsDiscountable, dto.IsDiscountable, nameof(product.IsDiscountable));
+            Track(product.IsReagent, dto.IsReagent, nameof(product.IsReagent));
 
             if (changedFields.Count > 0)
             {

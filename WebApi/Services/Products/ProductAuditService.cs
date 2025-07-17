@@ -28,6 +28,7 @@ public sealed class ProductAuditService(PharmaDbContext db) : IProductAuditServi
             Location = product.Location,
             MinStock = product.MinStock,
             IsDeleted = product.IsDeleted,
+            IsReagent = product.IsReagent,
             IsDiscountable = product.IsDiscountable,
             Category = product.Category,
             Formulation = product.Formulation,

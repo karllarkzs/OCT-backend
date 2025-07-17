@@ -44,6 +44,7 @@ public sealed partial class ProductService
                 IsLowStock: p.IsLowStock,
                 IsDiscountable: p.IsDiscountable,
                 IsDeleted: p.IsDeleted,
+                IsReagent: p.IsReagent,
                 History: includeHistory
                     ? p
                         .History.OrderByDescending(h => h.ChangedAt)
@@ -61,6 +62,7 @@ public sealed partial class ProductService
                             Location: h.Location,
                             MinStock: h.MinStock,
                             IsDeleted: h.IsDeleted,
+                            IsReagent: h.IsReagent,
                             IsDiscountable: h.IsDiscountable,
                             Category: h.Category,
                             Formulation: h.Formulation,

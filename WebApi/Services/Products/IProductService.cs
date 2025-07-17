@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using PharmaBack.WebApi.DTO.Product;
+using PharmaBack.WebApi.DTO.Restock;
 
 namespace PharmaBack.WebApi.Services.Products;
 
@@ -22,8 +24,12 @@ public interface IProductService
         bool includeHistory = false,
         CancellationToken ct = default
     );
-    Task<Guid> RestockAsync(RestockProductDto dto, CancellationToken ct = default);
+    Task<Guid> RestockAsync(
+    CreateRestockDto dto,
+    string userId,
+    string userName,
+    CancellationToken ct = default);
     Task<IReadOnlyList<string>> GetAllLocationsAsync(CancellationToken ct = default);
     Task<IReadOnlyList<string>> GetAllCompaniesAsync(CancellationToken ct = default);
-Task SoftDeleteAsync(IEnumerable<Guid> ids, string userId, string userName, CancellationToken ct = default);
+    Task SoftDeleteAsync(IEnumerable<Guid> ids, string userId, string userName, CancellationToken ct = default);
 }

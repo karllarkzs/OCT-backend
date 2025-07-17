@@ -32,7 +32,8 @@ public sealed partial class ProductService
                     && p.Formulation == dto.Formulation
                     && p.Company == dto.Company
                     && p.Type == dto.Type
-                    && p.IsDiscountable == dto.IsDiscountable,
+                    && p.IsDiscountable == dto.IsDiscountable
+                    && p.IsReagent == dto.IsReagent,
                 ct
             );
 
@@ -70,6 +71,7 @@ public sealed partial class ProductService
                     Company = dto.Company,
                     Type = dto.Type,
                     IsDiscountable = dto.IsDiscountable,
+                    IsReagent = dto.IsReagent,
                 };
 
                 db.Products.Add(product);

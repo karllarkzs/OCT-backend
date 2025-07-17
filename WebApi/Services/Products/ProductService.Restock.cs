@@ -1,52 +1,79 @@
 using Microsoft.EntityFrameworkCore;
 using PharmaBack.WebApi.DTO.Product;
+using PharmaBack.WebApi.DTO.Restock;
 using PharmaBack.WebApi.Models;
 
 namespace PharmaBack.WebApi.Services.Products;
 
 public sealed partial class ProductService
 {
-    public async Task<Guid> RestockAsync(RestockProductDto dto, CancellationToken ct = default)
+    public async Task<Guid> RestockAsync(
+    CreateRestockDto dto,
+    string userId,
+    string userName,
+    CancellationToken ct = default)
     {
-        Product? product = null;
-
-        if (dto.Id.HasValue)
-        {
-            product = await db.Products.FirstOrDefaultAsync(p => p.Id == dto.Id.Value, ct);
-
-            if (product is not null && product.ExpiryDate == dto.ExpiryDate)
-            {
-                product.Quantity += dto.Quantity;
-                db.Entry(product).Property(p => p.Quantity).IsModified = true;
-
-                await db.SaveChangesAsync(ct);
-                return product.Id;
-            }
-        }
-
-        var newProduct = new Product
+        var restock = new ProductRestock
         {
             Id = Guid.NewGuid(),
-            Barcode = dto.Barcode,
-            Brand = dto.Brand,
-            Generic = dto.Generic,
-            RetailPrice = dto.RetailPrice,
-            WholesalePrice = dto.WholesalePrice,
-            Quantity = dto.Quantity,
-            ExpiryDate = dto.ExpiryDate,
             ReceivedDate = dto.ReceivedDate,
-            Location = dto.Location,
-            MinStock = dto.MinStock,
-            Category = dto.Category,
-            Formulation = dto.Formulation,
-            Company = dto.Company,
-            Type = dto.Type,
-            IsDiscountable = dto.IsDiscountable,
+            ReceivedBy = dto.ReceivedBy,
+            SupplierName = dto.SupplierName,
+            ReferenceNumber = dto.ReferenceNumber,
+            CreatedByUserId = userId,
+            CreatedByUserName = userName,
+            CreatedAt = DateTime.UtcNow
         };
 
-        db.Products.Add(newProduct);
+        decimal totalCost = 0;
+
+        foreach (var item in dto.Items)
+        {
+            Product? product = await db.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId, ct);
+
+            if (product is not null)
+            {
+                product.Quantity += item.Quantity;
+                product.RetailPrice = item.RetailPrice;
+                product.WholesalePrice = item.PurchasePrice;
+
+                db.Entry(product).State = EntityState.Modified;
+
+                await audit.LogChangeAsync(
+                    product,
+                    ProductActionType.Restocked,
+                    new[] { nameof(product.Quantity), nameof(product.RetailPrice), nameof(product.WholesalePrice) },
+                    userId,
+                    userName,
+                    ct
+                );
+            }
+            else
+            {
+
+                throw new InvalidOperationException($"Product {item.ProductId} not found.");
+            }
+
+            var restockItem = new ProductRestockItem
+            {
+                ProductRestockId = restock.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                PurchasePrice = item.PurchasePrice,
+                RetailPrice = item.RetailPrice
+            };
+
+            restock.Items.Add(restockItem);
+            totalCost += item.Quantity * item.PurchasePrice;
+        }
+
+        restock.TotalCost = totalCost;
+
+        db.ProductRestocks.Add(restock);
         await db.SaveChangesAsync(ct);
 
-        return newProduct.Id;
+        return restock.Id;
     }
+
+
 }

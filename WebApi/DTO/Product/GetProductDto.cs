@@ -20,5 +20,6 @@ public sealed record GetProductDto(
     bool IsLowStock,
     bool IsDiscountable,
     bool IsDeleted,
+    bool IsReagent,
     IReadOnlyList<ProductSnapshotDto> History
 );

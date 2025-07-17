@@ -1,6 +1,6 @@
 Barcode
 Brand
-Generic 
+Generic - remove
 Category 
 Formulation 
 Company 

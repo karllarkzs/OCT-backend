@@ -30,6 +30,7 @@ public class ProductHistory
     public string? Location { get; set; }
     public int MinStock { get; set; }
     public bool IsDeleted { get; set; }
+    public bool IsReagent { get; set; }
     public bool IsDiscountable { get; set; }
     public string? Category { get; set; }
     public string? Formulation { get; set; }

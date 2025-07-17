@@ -1,0 +1,54 @@
+Todos:
+- make discount table
+- make discount endpoint
+- make sales endpoint
+- find sales computations
+- bUndle app
+
+feasibility
+- deploy backend
+- deploy frontend
+- make separate site for doc
+
+incident report for wastage
+monthly inventory logs
+reagents has uses per box
+- can be either 1 or more cartridges per box
+- may not fully consume 1 cartrige a month depends on fast moving etc
+recept from cashier to lab
+results
+- inupt result, send to doc
+- can offline
+
+senior discount
+expenses
+
+doc
+- note reagent
+- note calibration
+- note usage
+- reports on eod
+- reagents has how many tests
+- reagents bottle can change even before fully consumed
+- recalibration must be noted
+  
+
+separate reagent tracking
+- remove from product tracking
+- reagent has # of tests per bottle
+  
+
+on patient pay
+- profiling
+- - patient needs to input details if no profile
+- - digital sig per result 
+- - send to doc the results
+
+doc
+- site, 
+
+pos
+- end of day, send report to doc email
+
+transactions
+- separate products and packages
