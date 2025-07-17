@@ -20,7 +20,6 @@ namespace PharmaBack.WebApi.Data
 
         private static string GetConnectionString(IConfiguration configuration)
         {
-            // For standalone deployment, you might want to build this dynamically
             var host = configuration["Database:Host"];
             var port = configuration["Database:Port"];
             var database = configuration["Database:Database"];
